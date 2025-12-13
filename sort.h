@@ -5,7 +5,6 @@
 #include "game.h"
 #include "eval.h"
 
-// int compare_moves(const void * va, const void * vb);
 
 static inline int compare_moves(const void * va, const void * vb){
     const Move *a = (Move*)va;
@@ -18,7 +17,6 @@ static inline int score_move(Game * game, Move * move, SearchData * search_data,
 
 
 
-    // print_move_full(move);
     int score = 0;
     if (tt_move){
         if (move_is_equal(move, tt_move)){
@@ -32,20 +30,8 @@ static inline int score_move(Game * game, Move * move, SearchData * search_data,
     }
     
     if (move->type == CAPTURE || (move->type == PROMOTION && move->promotion_capture) || move->type == EN_PASSANT){
-        // int see_val = see(game, move);
-        // if (see_val > 0){
         int s = mvv_lva[move->piece][move->capture_piece];
-        // if (see_val < -10000) see_val = -10000;
-        // if (see_val > 10000) see_val = 10000;
-        // printf("MVV_LVA: %d\n", s);
-        // if (see_val < 0) see_val -= 200;
-        // printf("SEE: %d\n", see_val);
         score +=s + 8000000;
-        // return s * 2 + see_val + 8000000;
-        // score += s * 2 + see_val + 8000000;
-        // score += s * 2;
-            
-        // }
     }
     uint32_t refutation = get_refutation(game, &game->last_move);
     if (refutation){
@@ -57,32 +43,26 @@ static inline int score_move(Game * game, Move * move, SearchData * search_data,
     }
     if (has_countermove){
         if (move_is_equal(move, &countermove)){
-            score +=6500000;
+            score += 6500000;
         }
     }
     if (move->type == PROMOTION){
-        score +=6000000;
-        // printf("PROMOTION: %d\n", score);
+        score += 6000000;
     }
     if (move->is_checking){
-        score +=5000000;
+        score += 5000000;
     }
     if (search_data){
         if (move_is_equal(move, &search_data->killer_moves[ply][0]) || move_is_equal(move, &search_data->killer_moves[ply][1])){
-            // score = 4000000;
-            score +=4000000;
-            // printf("KILLER: 200\n");
+            score += 4000000;
         } else {
             
         }
 
         int history = game->history_table[move->side][move->start_index][move->end_index];
-        // printf("HISTORY: %d\n", history);
-        // score += history;
         score +=history;
         
     }
-    // printf("FINAL SCORE: %d\n", score);
 
 
     
@@ -109,11 +89,6 @@ static inline void sort_moves(Game * game, Move move_list[200], int move_count, 
         move->score = score_move(game, move, search_data, ply, best_move, c, has_countermove);
     }
     partial_selection_sort(move_list, move_count, 15);
-    // qsort(move_list, move_count, sizeof(Move), compare_moves);
-    // if (has_pv_move){
-        
-    // print_moves(move_list, move_count);
-    // }
 
 }
 
@@ -136,20 +111,7 @@ static inline int score_qmove(Game * game, Move * move, SearchData * search_data
     
     if (move->type == CAPTURE || (move->type == PROMOTION && move->promotion_capture) || move->type == EN_PASSANT){
         int s = mvv_lva[move->piece][move->capture_piece];
-        // int see_val = see(game, move);
-        // if (see_val < -10000) see_val = -10000;
-        // if (see_val > 10000) see_val = 10000;
-        // printf("MVV_LVA: %d\n", s);
-        // if (see_val < 0) see_val -= 200;
-        // printf("SEE: %d\n", see_val);
-        // if (see_val <= -100){
-        //     return -100;
-        // }
-        // score += s * 2 + see_val + 8000000;
         score += s  + 8000000;
-        // score += s * 2 + 8000000;
-            
-        // }
     } 
     if (move->is_checking){
         score += 7000000;
@@ -180,11 +142,6 @@ static inline int score_qmove(Game * game, Move * move, SearchData * search_data
         score += history;
         
     }
-    // if (move->is_checking){
-    //     if (see(game, move) < -150){
-    //         score = -20000;
-    //     }
-    // }
 
 
     
@@ -214,11 +171,6 @@ static inline int sort_qmoves(Game * game, Move move_list[200], int move_count, 
     }
     int maximum = moves;
     partial_selection_sort(move_list, move_count, 15);
-    // qsort(move_list, move_count, sizeof(Move), compare_moves);
-    // if (has_pv_move){
-        
-    // print_moves(move_list, move_count);
-    // }
     return maximum;
 
 }

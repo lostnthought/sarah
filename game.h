@@ -164,7 +164,6 @@ static inline void undo_move(Game * game, Move * move){
                     game->pawn_key ^= pawn_random[!side][end];
                     
                 }
-                // update_incremental_material_move(game, side, piece, start, end, true, end, capture_piece, true, our_pieces, their_pieces);
             }
             break;
         case EN_PASSANT:
@@ -368,7 +367,6 @@ static inline void undo_move(Game * game, Move * move){
 
 /* @brief handles polyglot hash key / tt updates, bitboard, and "piece_at[][]" changes. also stores history, and replaces last_move which is used for refutations near the end of the function. */
 
-// bool make_move(Game * game, Move * move);
 
 
 // returns if move was valid - if false, undo this move
@@ -430,7 +428,6 @@ static inline bool make_move(Game * game, Move * move){
                 game->psqt_evaluation_eg[side] += PSQT_EG[side][piece][end];
 
                 
-                // update_incremental_material_move(game, side, piece, start, end, false, 0, 0, false, our_pieces, their_pieces);
 
 
                 
@@ -458,8 +455,6 @@ static inline bool make_move(Game * game, Move * move){
                 key ^= get_piece_random(piece, side, end);
                 key ^= get_piece_random(capture_piece, (Side)!side, end);
 
-                // game->material_evaluation_mg[!side] -= piece_values_mg[move->capture_piece];
-                // game->material_evaluation_eg[!side] -= piece_values_eg[move->capture_piece];
 
                 game->phase -= phase_values[capture_piece];
 
@@ -470,7 +465,6 @@ static inline bool make_move(Game * game, Move * move){
                     game->pawn_key ^= pawn_random[side][end];
                 }
                 if (capture_piece == PAWN){
-                    // game->pawn_key ^= pawn_random[side][start];
                     game->pawn_key ^= pawn_random[!side][end];
                     
                 }
@@ -482,7 +476,6 @@ static inline bool make_move(Game * game, Move * move){
                 game->psqt_evaluation_mg[!side] -= PSQT_MG[!side][capture_piece][end];
                 game->psqt_evaluation_eg[!side] -= PSQT_EG[!side][capture_piece][end];
 
-                // update_incremental_material_move(game, side, piece, start, end, true, end, capture_piece, false, our_pieces, their_pieces);
             }
             break;
         case EN_PASSANT:
@@ -516,7 +509,6 @@ static inline bool make_move(Game * game, Move * move){
                     game->pawn_key ^= pawn_random[side][start];
                     game->pawn_key ^= pawn_random[side][end];
                 }
-                    // game->pawn_key ^= pawn_random[side][start];
                 game->pawn_key ^= pawn_random[!side][capture_square];
 
                 game->psqt_evaluation_mg[side] -= PSQT_MG[side][piece][start];
@@ -564,7 +556,6 @@ static inline bool make_move(Game * game, Move * move){
                 game->piece_at[end] = piece;
                 game->piece_at[rook_castle_locations[side][castle_side][END]] = ROOK;
 
-                // game->pawn_key ^= king_location_random[side][castle_side];
 
 
             }
@@ -711,10 +702,7 @@ static inline bool make_move(Game * game, Move * move){
         }
     }
 
-    // zobrist
-    // if (game->side_to_move == WHITE){
     key ^= get_turn_random();
-    // }
     game->board_pieces[BOTH] = game->board_pieces[WHITE] | game->board_pieces[BLACK];
     game->side_to_move = (Side)!game->side_to_move;
 
@@ -746,7 +734,6 @@ int set_board_to_fen(Game * game, char fen[MAX_FEN]);
 
 
 
-// bool piece_is_attacking_square(Game * game, PieceType piece, Side side, int start_square, int end_square, uint64_t blockers);
 
 static inline void swap_move(Move *a, Move *b){
     Move t = *a; *a = *b; *b = t;

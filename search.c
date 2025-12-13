@@ -55,7 +55,6 @@ int quiesce(Game * game, int  alpha, int  beta, SearchData * search_data, int de
     TTEntry * tt_entry = search_for_tt_entry(game, game->key);
 
     search_data->tt_probes += 1;
-    // search_data->pv_length[ply] = 0;
 
     if (tt_entry){
         search_data->tt_hits += 1;
@@ -64,37 +63,33 @@ int quiesce(Game * game, int  alpha, int  beta, SearchData * search_data, int de
         if (tt_entry->has_best_move && !search_data->disable_writes){
 
             unpack_move(tt_entry->move32, &best_move);
-            // best_move = tt_entry->move;
             has_best_move = true;
 
         }
         if (!pv_node ){
-        // if (!pv_node ){
     
             int16_t adjusted_score = adjust_mate_score_from_tt(tt_entry->score, tt_entry->ply, ply);
-            // int16_t adjusted_score = tt_entry->score;
             if (tt_entry->type == EXACT) return adjusted_score;
             if (tt_entry->type == UPPER && adjusted_score <= alpha) return adjusted_score;
             if (tt_entry->type == LOWER && adjusted_score >= beta) return adjusted_score;
         }
-        // if (tt_entry->type == PV_EXACT) pv_node = true;
             
 
     }
 
     // delta pruning
     // if we win a huge amount and still are under alpha, we can return upper bound.
-    // int  max_delta = piece_values_mg[QUEEN];
-    // if (promotion_ranks[game->side_to_move] & game->pieces[game->side_to_move][PAWN]){
-    //     max_delta += piece_values_mg[QUEEN];
-    // }
-    // if (!is_in_check && best_score < alpha - max_delta ){
-    //     search_data->delta_prunes += 1;
-    //     return alpha;
-    // }
-    // if (alpha < best_score){
-    //     alpha = best_score;
-    // }
+    int  max_delta = piece_values_mg[QUEEN];
+    if (promotion_ranks[game->side_to_move] & game->pieces[game->side_to_move][PAWN]){
+        max_delta += piece_values_mg[QUEEN];
+    }
+    if (!is_in_check && best_score < alpha - max_delta ){
+        search_data->delta_prunes += 1;
+        return alpha;
+    }
+    if (alpha < best_score){
+        alpha = best_score;
+    }
         
 
     Move * new_best = NULL;
@@ -109,11 +104,11 @@ int quiesce(Game * game, int  alpha, int  beta, SearchData * search_data, int de
         Move * move = &move_list[i];
 
         // see pruning
-        // if (see(game, move) < -50 && !move->is_checking && !is_in_check) {
+        if (see(game, move) < -50 && !move->is_checking && !is_in_check) {
 
-        //     search_data->q_see_prunes+=1;
-        //     continue;
-        // }
+            search_data->q_see_prunes+=1;
+            continue;
+        }
         if(!make_move(game, &move_list[i])){
             undo_move(game, &move_list[i]);
 
@@ -139,24 +134,6 @@ int quiesce(Game * game, int  alpha, int  beta, SearchData * search_data, int de
         }
     }
     create_new_tt_entry(game, game->key, best_score, hash_flag, depth, ply, new_best);
-    if (is_in_check && legal_moves == 0){
-        
-        // int lm = 0;
-        // Move new_move_list[200];
-        // int new_move_count = 0;
-        // generate_moves(game, game->side_to_move, new_move_list, &new_move_count);
-        // for (int i = 0; i < new_move_count; i++){
-        //     if (make_move(game, &new_move_list[i])) {
-        //         lm += 1;
-        //     }
-        //     undo_move(game, &new_move_list[i]);
-        // }
-        // if (lm == 0){
-        //     create_new_tt_entry(game, game->key, -MATE_SCORE + ply, EXACT, depth, ply, NULL);
-        //     return -MATE_SCORE + ply;
-        // }
-    }
-
     return best_score;
     
 }
@@ -199,14 +176,9 @@ int search(Game * game, int  alpha, int  beta, int depth, SearchData * search_da
         clock_t end_time = clock();
         double elapsed_time = (double)(end_time - search_data->start_time) / CLOCKS_PER_SEC; 
         if (elapsed_time >= search_data->max_time) {
-            // if (search_data->max_depth < 5 && !search_data->has_extended){
-            //     search_data->max_time += 0.5;
-            //     search_data->has_extended = true;
-            // } else {
             search_data->stop = true;
             return 0;
                 
-            // }
         }
     }
     int  ktv = 0;
@@ -215,7 +187,6 @@ int search(Game * game, int  alpha, int  beta, int depth, SearchData * search_da
 
         int eval = 0;
         eval = quiesce(game, alpha, beta, search_data, depth, ply);
-            // eval= evaluate(game, game->side_to_move, search_data, &ktv);
         return eval;
     }
 
@@ -233,7 +204,6 @@ int search(Game * game, int  alpha, int  beta, int depth, SearchData * search_da
             if (tt_entry->has_best_move && !search_data->disable_writes){
 
                 unpack_move(tt_entry->move32, &best_move);
-                // best_move = tt_entry->move;
                 has_best_move = true;
 
             }
@@ -246,7 +216,6 @@ int search(Game * game, int  alpha, int  beta, int depth, SearchData * search_da
                 if (tt_entry->type == UPPER && adjusted_score <= alpha) return adjusted_score;
                 if (tt_entry->type == LOWER && adjusted_score >= beta) return adjusted_score;
             }
-            // if (tt_entry->type == PV_EXACT) pv_node = true;
                 
 
         }
@@ -255,7 +224,6 @@ int search(Game * game, int  alpha, int  beta, int depth, SearchData * search_da
     int stand= 0;
     int sktv = 0;
     EvalEntry * eval_entry = NULL;
-    // if (depth <= 2){
         
         eval_entry = search_for_eval(game, game->key);
         if (eval_entry){
@@ -265,11 +233,7 @@ int search(Game * game, int  alpha, int  beta, int depth, SearchData * search_da
             stand = evaluate(game, game->side_to_move, search_data, &sktv);
          hash_eval(game, game->key, stand);
      }
-    // } else {
-    //     stand = game->psqt_evaluation_mg[game->side_to_move] - game->psqt_evaluation_mg[!game->side_to_move];
-    // }
     if (ply >= 70){
-        // return evaluate(game, game->side_to_move, search_data, &ktv);
         return stand;
     }
 
@@ -543,7 +507,6 @@ int search(Game * game, int  alpha, int  beta, int depth, SearchData * search_da
                 score = current_score;
             }
             if (current_score >= beta){
-                // new_best = &move_list[i];
                 if (legal_moves == 1) search_data->ordering_success += 1;
                 if (!search_data->disable_writes){
         
@@ -554,7 +517,6 @@ int search(Game * game, int  alpha, int  beta, int depth, SearchData * search_da
                         search_data->killer_moves[ply][0] = move_list[i];
                     
                     }
-                    // game->history_table[move->side][move->start_index][move->end_index] += (32 * depth) - game->history_table[move->side][move->start_index][move->end_index] / 64;
                     game->history_table[move->side][move->start_index][move->end_index] += depth * depth;
                 }
                 store_countermove(game, &game->last_move, move);
@@ -575,11 +537,7 @@ int search(Game * game, int  alpha, int  beta, int depth, SearchData * search_da
                 new_best->score = 1000000;
 
                 hash_type = EXACT;
-                // if (score > old_alpha){
-                    store_pv(ply, new_best, search_data);
-                    // hash_type = PV_EXACT;
-                    // pv_node = true;
-                // }
+                store_pv(ply, new_best, search_data);
                 alpha = score;
             }
 
@@ -594,10 +552,6 @@ int search(Game * game, int  alpha, int  beta, int depth, SearchData * search_da
 
     if (legal_moves == 0 && is_in_check){
         // if no legal quiet moves, we should check the rest to determine if we are in checkmate
-        // if (game->pieces[BLACK][QUEEN] & (1ULL << 52)){
-        //     printf("WE GET HERE IN THE TREE\n");
-        //     print_game_board(game);
-        // }
 
         create_new_tt_entry(game, game->key, -MATE_SCORE + ply, EXACT, depth, ply, NULL);
         return -MATE_SCORE + ply;
@@ -658,14 +612,8 @@ int search_root(Game * game, int depth, int  alpha, int  beta, SearchData * sear
         clock_t end_time = clock();
         double elapsed_time = (double)(end_time - search_data->start_time) / CLOCKS_PER_SEC; 
         if (elapsed_time >= search_data->max_time) {
-        //     if (search_data->max_depth < 5 && !search_data->has_extended){
-        //         search_data->max_time += 0.5;
-        //         search_data->has_extended = true;
-        //     } else {
             search_data->stop = true;
             return 0;
-                
-            // }
         }
     }
     if (best_move){
@@ -718,8 +666,6 @@ Move iterative_search(Game * game, SearchFlags * flags){
     int delta = 50;
     int  alpha = -INT_MAX;
     int  beta = INT_MAX;
-    // int a = 0;
-    // int b = 0;
     Move move_list[200];
     int move_count = 0;
     generate_moves(game, game->side_to_move, move_list, &move_count);
@@ -775,30 +721,11 @@ Move iterative_search(Game * game, SearchFlags * flags){
         }
         int  current_score = 0;
         qsort(move_list, move_count, sizeof(Move), compare_moves);
-        // if (i <= 5){
-            
-        //     search_data.disable_writes = false;
-        //     current_score = negamax_root(game, i, alpha, beta, &search_data, move_list, move_count);
-        //     // delta = 35;
-        //     // a = current_score - delta;
-        //     // b = current_score + delta;
-        // } else {
-        //     delta = 45;
-        //     int  new_score = negamax_root(game, i, current_score - delta, current_score + delta, &search_data, move_list, move_count);
-        //     if (search_data.stop) break;
-        //     if (new_score <= current_score - delta || new_score >= current_score + delta){
-                search_data.disable_writes = false;
-                current_score = search_root(game, i, alpha, beta, &search_data, move_list, move_count);
-                if (search_data.stop) break;
-         // } else {
-         //         current_score = new_score;
-         //    }
-        // }
-        // if (search_data.stop) break;
-        //     int new_score = 0;
 
+        search_data.disable_writes = false;
+        current_score = search_root(game, i, alpha, beta, &search_data, move_list, move_count);
+        if (search_data.stop) break;
 
-        
         // if we ran out of time, exit and discard that move
         clock_t end_time = clock();
         double elapsed_time = (double)(end_time - search_data.start_time) / CLOCKS_PER_SEC; 
@@ -849,7 +776,6 @@ uint64_t perft(Game * game, int depth){
 
     if (depth == 0) {
         int ktv = 0;
-        // evaluate(game, game->side_to_move, &data, &ktv);
         return 1ULL;
     }
     

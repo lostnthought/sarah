@@ -259,18 +259,18 @@ static inline int evaluate_endgame_king(Game * game, Side side){
     int score = 0;
     int king_pos = __builtin_ctzll(game->pieces[side][KING]);
     int enemy_king_pos = __builtin_ctzll(game->pieces[!side][KING]);
-    // uint64_t pawns = game->pieces[side][PAWN];
-    // while (pawns){
-    //     int pos = pop_lsb(&pawns);
-    //     int pawn_val = PAWN_STORM_PSQT_EG[side][pos];
+    uint64_t pawns = game->pieces[side][PAWN];
+    while (pawns){
+        int pos = pop_lsb(&pawns);
+        int pawn_val = PAWN_STORM_PSQT_EG[side][pos];
 
-    //     // not close enough to promotion to be considered
-    //     if (pawn_val < 4) continue;
-    //     int dist = manhattan_distance[pos][king_pos];
-    //     score += ((MAX_MANHATTAN_DIST - dist) * pawn_val) / 3;
-    //     int enemy_dist = manhattan_distance[pos][enemy_king_pos];
-    //     score -= ((MAX_MANHATTAN_DIST - enemy_dist) * pawn_val) / 3;
-    // }
+        // not close enough to promotion to be considered
+        if (pawn_val < 4) continue;
+        int dist = manhattan_distance[pos][king_pos];
+        score += ((MAX_MANHATTAN_DIST - dist) * pawn_val) / 3;
+        int enemy_dist = manhattan_distance[pos][enemy_king_pos];
+        score -= ((MAX_MANHATTAN_DIST - enemy_dist) * pawn_val) / 3;
+    }
     int dist_to_center = center_manhattan_distance[king_pos];
     score += DIST_TO_CENTER_BONUS * (MAX_CENTER_MANHATTAN_DIST - dist_to_center);
 
@@ -347,26 +347,18 @@ static inline uint64_t evaluate_material_weighted(Game * game, Side side, int  *
     
     while (pawns){
         int pos = pop_lsb(&pawns);
-        // uint64_t moves = game->pawn_moves[side][pos] & ~our_pieces;
-        // int count = bit_count(moves);
-        // int swap_pos = pos;
-        // mg += weights_mg[params.psqt[side][PAWN][pos]] * psqt_sign;
-        // eg += weights_eg[params.psqt[side][PAWN][pos]] * psqt_sign;
+        uint64_t moves = pawn_moves[side][pos] & ~our_pieces;
         mg += PSQT_MG[side][PAWN][pos];
         eg += PSQT_EG[side][PAWN][pos];
-        // if (attack_mask & game->pawn_captures[side][pos]){
-        //     // mg += DOUBLE_ATTACK_BONUS_MG;
-        //     // eg += DOUBLE_ATTACK_BONUS_EG;
-        // }
-        // uint64_t atk = moves & other_pieces;
+        uint64_t atk = moves & other_pieces;
         
-        // if (atk){
-        //     // int attack_pos = pop_lsb(&atk);
-        //     PieceType p;
-        //     mva_from_attacker_mask(game, game->pieces[!side], atk, side, &p);
-        //     mg += ATTACKING_HIGHER_VALUE_BONUS[PAWN][p];
-        //     eg += ATTACKING_HIGHER_VALUE_BONUS[PAWN][p];
-        // }
+        if (atk){
+            // int attack_pos = pop_lsb(&atk);
+            PieceType p;
+            mva_from_attacker_mask(game, game->pieces[!side], atk, side, &p);
+            mg += ATTACKING_HIGHER_VALUE_BONUS[PAWN][p];
+            eg += ATTACKING_HIGHER_VALUE_BONUS[PAWN][p];
+        }
 
         attack_mask |= pawn_captures[side][pos];
     }
@@ -376,22 +368,18 @@ static inline uint64_t evaluate_material_weighted(Game * game, Side side, int  *
         int pos = pop_lsb(&knights);
         uint64_t moves = knight_moves[pos] & ~our_pieces;
         int count = __builtin_popcountll(moves);
-        // int swap_pos = pos;
-        // moves_blocked_by_enemy_pawns += bit_count(moves & enemy_pawn_attacks);
-        // mg += weights_mg[params.psqt[side][KNIGHT][pos]] * psqt_sign;
-        // eg += weights_eg[params.psqt[side][KNIGHT][pos]] * psqt_sign;
         mg += PSQT_MG[side][KNIGHT][pos];
         eg += PSQT_EG[side][KNIGHT][pos];
         mg += count * MOBILITY_BONUS_MG[KNIGHT];
         eg += count * MOBILITY_BONUS_EG[KNIGHT];
         attack_mask |= knight_moves[pos];
-        // uint64_t attack = game->knight_moves[pos] & other_pieces;
-        // if(attack){
-        //     PieceType p;
-        //     mva_from_attacker_mask(game, game->pieces[!side], attack, side, &p);
-        //     mg += ATTACKING_HIGHER_VALUE_BONUS[KNIGHT][p];
-        //     eg += ATTACKING_HIGHER_VALUE_BONUS[KNIGHT][p];
-        // }
+        uint64_t attack = knight_moves[pos] & other_pieces;
+        if(attack){
+            PieceType p;
+            mva_from_attacker_mask(game, game->pieces[!side], attack, side, &p);
+            mg += ATTACKING_HIGHER_VALUE_BONUS[KNIGHT][p];
+            eg += ATTACKING_HIGHER_VALUE_BONUS[KNIGHT][p];
+        }
     }
     uint64_t bishops = game->pieces[side][BISHOP];
     int bishop_count = 0;
@@ -401,22 +389,18 @@ static inline uint64_t evaluate_material_weighted(Game * game, Side side, int  *
         uint64_t raw_moves = fetch_bishop_moves(game, pos, both);
         uint64_t moves = raw_moves & ~our_pieces;
         int count = bit_count(moves);
-        // moves_blocked_by_enemy_pawns += bit_count(moves & enemy_pawn_attacks);
-        // int swap_pos = pos;
-        // mg += weights_mg[params.psqt[side][BISHOP][pos]] * psqt_sign;
-        // eg += weights_eg[params.psqt[side][BISHOP][pos]] * psqt_sign;
         mg += PSQT_MG[side][BISHOP][pos];
         eg += PSQT_EG[side][BISHOP][pos];
         mg += count * MOBILITY_BONUS_MG[BISHOP];
         eg += count * MOBILITY_BONUS_EG[BISHOP];
-        // attack_mask |= raw_moves;
-        // uint64_t attack = raw_moves & other_pieces;
-        // if(attack){
-        //     PieceType p;
-        //     mva_from_attacker_mask(game, game->pieces[!side], attack, side, &p);
-        //     mg += ATTACKING_HIGHER_VALUE_BONUS[BISHOP][p];
-        //     eg += ATTACKING_HIGHER_VALUE_BONUS[BISHOP][p];
-        // }
+        attack_mask |= raw_moves;
+        uint64_t attack = raw_moves & other_pieces;
+        if(attack){
+            PieceType p;
+            mva_from_attacker_mask(game, game->pieces[!side], attack, side, &p);
+            mg += ATTACKING_HIGHER_VALUE_BONUS[BISHOP][p];
+            eg += ATTACKING_HIGHER_VALUE_BONUS[BISHOP][p];
+        }
     }
     if  (bishop_count >= 2){
         mg += BISHOP_PAIR_BONUS;
@@ -429,20 +413,19 @@ static inline uint64_t evaluate_material_weighted(Game * game, Side side, int  *
         uint64_t raw_moves = fetch_rook_moves(game, pos, both);
         uint64_t moves = raw_moves & ~our_pieces;
         int count = bit_count(moves);
-        // moves_blocked_by_enemy_pawns += bit_count(moves & enemy_pawn_attacks);
         mg += PSQT_MG[side][ROOK][pos];
         eg += PSQT_EG[side][ROOK][pos];
         mg += count * MOBILITY_BONUS_MG[ROOK];
         eg += count * MOBILITY_BONUS_EG[ROOK];
         attack_mask |= raw_moves;
         // we are attacking
-        // uint64_t attack = raw_moves & other_pieces;
-        // if(attack){
-        //     PieceType p;
-        //     mva_from_attacker_mask(game, game->pieces[!side], attack, side, &p);
-        //     mg += ATTACKING_HIGHER_VALUE_BONUS[ROOK][p];
-        //     eg += ATTACKING_HIGHER_VALUE_BONUS[ROOK][p];
-        // }
+        uint64_t attack = raw_moves & other_pieces;
+        if(attack){
+            PieceType p;
+            mva_from_attacker_mask(game, game->pieces[!side], attack, side, &p);
+            mg += ATTACKING_HIGHER_VALUE_BONUS[ROOK][p];
+            eg += ATTACKING_HIGHER_VALUE_BONUS[ROOK][p];
+        }
     }
     uint64_t queens = game->pieces[side][QUEEN];
     int queen_count = bit_count(queens);
@@ -452,11 +435,8 @@ static inline uint64_t evaluate_material_weighted(Game * game, Side side, int  *
         uint64_t bishop_moves =  fetch_bishop_moves(game, pos, both);
         uint64_t raw_moves = rook_moves | bishop_moves;
         uint64_t moves = raw_moves & ~our_pieces;
-        // moves_blocked_by_enemy_pawns += bit_count(moves & enemy_pawn_attacks);
         int count = bit_count(moves);
         // int swap_pos = pos;
-        // mg += weights_mg[params.psqt[side][QUEEN][pos]] * psqt_sign;
-        // eg += weights_eg[params.psqt[side][QUEEN][pos]] * psqt_sign;
         mg += PSQT_MG[side][QUEEN][pos];
         eg += PSQT_EG[side][QUEEN][pos];
         mg += count * MOBILITY_BONUS_MG[QUEEN];
@@ -480,13 +460,13 @@ static inline uint64_t evaluate_material_weighted(Game * game, Side side, int  *
             eg += QUEEN_BISHOP_CONNECTED_BONUS;
         }
         // we are attacking
-        // uint64_t attack = raw_moves & other_pieces;
-        // if(attack){
-        //     PieceType p;
-        //     mva_from_attacker_mask(game, game->pieces[!side], attack, side, &p);
-        //     mg += ATTACKING_HIGHER_VALUE_BONUS[QUEEN][p];
-        //     eg += ATTACKING_HIGHER_VALUE_BONUS[QUEEN][p];
-        // }
+        uint64_t attack = raw_moves & other_pieces;
+        if(attack){
+            PieceType p;
+            mva_from_attacker_mask(game, game->pieces[!side], attack, side, &p);
+            mg += ATTACKING_HIGHER_VALUE_BONUS[QUEEN][p];
+            eg += ATTACKING_HIGHER_VALUE_BONUS[QUEEN][p];
+        }
     }
         
     int kpos = bit_scan_forward(&game->pieces[side][KING]);
@@ -675,10 +655,6 @@ static inline int evaluate(Game * game, Side side, SearchData * search_data, int
     int sign = 1;
     int mg = 0;
     int eg = 0;
-    // float phase = (double)game->phase / MAX_PHASE;
-    // float eg_phase = 1.0 - phase;
-    // if (eg_phase < 0.0) eg_phase = 0.0;
-    // if (phase < 0.0) phase = 0.0;
 
 
     int p_mg = 0; int p_eg = 0;
@@ -706,7 +682,7 @@ static inline int evaluate(Game * game, Side side, SearchData * search_data, int
         black_pawn_attacks = evaluate_pawn_structure(game, BLACK, &b_ps_mg, &b_ps_eg);
         int b_sp = 0;
         int w_sp = 0;
-    //     // evaluate_pawn_space(game,&w_sp, &b_sp);
+        // evaluate_pawn_space(game,&w_sp, &b_sp);
         int pawn_mg = w_ps_mg - b_ps_mg + w_sp - b_sp;
         int pawn_eg = w_ps_eg - b_ps_eg + w_sp - b_sp;
         create_new_pawn_hash_entry(game, game->pawn_key, pawn_mg, pawn_eg, king_pawn_shield, white_pawn_attacks, black_pawn_attacks);
@@ -757,8 +733,6 @@ static inline int evaluate(Game * game, Side side, SearchData * search_data, int
     
     // mg += game->psqt_evaluation_mg[WHITE] - game->psqt_evaluation_mg[BLACK];
     // eg += game->psqt_evaluation_eg[WHITE] - game->psqt_evaluation_eg[BLACK];
-    // mg += game->mobility_score_mg[WHITE] - game->mobility_score_mg[BLACK];
-    // eg += game->mobility_score_eg[WHITE] - game->mobility_score_eg[BLACK];
 
     int w_rf_mg = 0, w_rf_eg = 0;
     int b_rf_mg = 0, b_rf_eg = 0;
@@ -770,8 +744,8 @@ static inline int evaluate(Game * game, Side side, SearchData * search_data, int
     int b_ks_mg = 0, b_ks_eg = 0;
     evaluate_king_safety(game, WHITE, &w_ks_mg, &w_ks_eg, w_attack_mask, b_attack_mask);  
     evaluate_king_safety(game, BLACK, &b_ks_mg, &b_ks_eg, b_attack_mask, w_attack_mask);
-    // // // evaluate_king_pawn_safety(game, WHITE, &w_ks_mg, &w_ks_eg);  
-    // // evaluate_king_pawn_safety(game, BLACK, &b_ks_mg, &b_ks_eg);
+    // evaluate_king_pawn_safety(game, WHITE, &w_ks_mg, &w_ks_eg);  
+    // evaluate_king_pawn_safety(game, BLACK, &b_ks_mg, &b_ks_eg);
     if (side == WHITE){
         ktv += w_ks_mg;
     } else {
@@ -779,11 +753,12 @@ static inline int evaluate(Game * game, Side side, SearchData * search_data, int
     }
     mg += w_ks_mg - b_ks_mg;
     eg += w_ks_eg - b_ks_eg;
-    // if (game->phase < 10){
-    //     int  eg_king = evaluate_endgame_king(game, WHITE) - evaluate_endgame_king(game, BLACK);
-    //     eg += eg_king;
+
+    if (game->phase < 10){
+        int  eg_king = evaluate_endgame_king(game, WHITE) - evaluate_endgame_king(game, BLACK);
+        eg += eg_king;
         
-    // }
+    }
 
     // if (game->phase > 20){
     //     int eval = evaluate_early_game_development(game, WHITE) - evaluate_early_game_development(game, BLACK);
