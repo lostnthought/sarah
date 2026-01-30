@@ -1,179 +1,137 @@
 #ifndef SORT_H
 #define SORT_H
 
+#include "utils.h"
+#include "game.h"
+#include "search.h"
 #include "types.h"
 #include "game.h"
 #include "eval.h"
+#include "zobrist.h"
+#include <stdint.h>
 
 
-static inline int compare_moves(const void * va, const void * vb){
-    const Move *a = (Move*)va;
-    const Move *b = (Move*)vb;
-    if (a->score > b->score) return -1;
-    if (a->score < b->score) return 1;
-    return 0;
-}
-static inline int score_move(Game * game, Move * move, SearchData * search_data, int ply, Move * tt_move, Move countermove, bool has_countermove){
+static inline int16_t score_move(Game * game, SearchStack * stack, ThreadData * td, int ply, Move m ){
 
+    int16_t score = 0;
 
+    if (is_cap(game, m) || move_type(m) == PROMOTION){
+        PieceType p = move_piece(game, m);
+        PieceType cp = move_cp(game, m);
+        if (move_type(m) == ENPASSANT) cp = PAWN;
+        score += PVAL[cp] * 3 + td->cap_hist[p][move_to(m)][cp];
+    } else {
+        PieceType p = move_piece(game, m);
+        uint8_t from = move_from(m);
+        uint8_t to = move_to(m);
+        Side side = game->side_to_move;
 
-    int score = 0;
-    if (tt_move){
-        if (move_is_equal(move, tt_move)){
-            score +=10000000;
-            
-        }
-        
-    }
-    if (move_is_equal(move, &search_data->pv_table[ply][0])){
-        score +=9000000;
-    }
-    
-    if (move->type == CAPTURE || (move->type == PROMOTION && move->promotion_capture) || move->type == EN_PASSANT){
-        int s = mvv_lva[move->piece][move->capture_piece];
-        score +=s + 8000000;
-    }
-    uint32_t refutation = get_refutation(game, &game->last_move);
-    if (refutation){
-        Move r;
-        unpack_move(refutation, &r);
-        if (move_is_equal(move, &r)){
-          score += 7000000;
+        score += td->history[side][from_to(m)];
+
+        const int ply_minus[4] = { 1, 2, 4, 6 };
+        double scale[4] = { sp.chist1_scale, sp.chist2_scale, sp.chist4_scale, sp.chist6_scale }; 
+        for (int i = 0; i < 4; i++){
+            score = MAX(MIN(score + (*(stack - ply_minus[i])->ch)[move_piece(game, m)][to] / scale[i], INT16_MAX), INT16_MIN);
         }
     }
-    if (has_countermove){
-        if (move_is_equal(move, &countermove)){
-            score += 6500000;
-        }
-    }
-    if (move->type == PROMOTION){
-        score += 6000000;
-    }
-    if (move->is_checking){
-        score += 5000000;
-    }
-    if (search_data){
-        if (move_is_equal(move, &search_data->killer_moves[ply][0]) || move_is_equal(move, &search_data->killer_moves[ply][1])){
-            score += 4000000;
-        } else {
-            
-        }
-
-        int history = game->history_table[move->side][move->start_index][move->end_index];
-        score +=history;
-        
-    }
-
-
-    
     return score;
 
 }
 
-static inline void sort_moves(Game * game, Move move_list[200], int move_count, Move * best_move, SearchData * search_data, int ply){
-    
-    // print_moves(move_list, move_count);
-    bool has_pv_move = false;
-    uint32_t countermove = get_countermove(game, &game->last_move);
-    Move c;
-    bool has_countermove = false;
-    bool has_refutation = false;
-    if (countermove){
-        has_countermove = true;
-        unpack_move(countermove, &c);
-    }
-    
+
+static inline void init_ordering(uint8_t ordering[256], uint8_t move_count){
     
     for (int i = 0; i < move_count; i++){
-        Move * move = &move_list[i];
-        move->score = score_move(game, move, search_data, ply, best_move, c, has_countermove);
+        ordering[i] = i;
     }
-    partial_selection_sort(move_list, move_count, 15);
-
 }
 
-static inline int score_qmove(Game * game, Move * move, SearchData * search_data, int ply, Move countermove, bool has_countermove, Move * tt_move){
 
 
+static inline void init_move_picker(MovePicker * mp){
+    for (int i = 0; i < mp->move_count; i++){
+        mp->scores[i] = SCORE_NONE;
+        mp->ordering[i] = i;
+    }
+    mp->current_index = 0;
+    
+}
 
-    // print_move_full(move);
-    int score = 0;
-    if (tt_move){
-        if (move_is_equal(move, tt_move)){
-            score +=10000000;
+static inline bool move_is_eligible(Game * game, Move move, int index, MovePicker * mp, SearchStack * stack, int ply){
+
+    switch (mp->stage){
+        case PICK_TT_MOVE:
+            return move == mp->tt_move;
+            break;
+        case PICK_GOOD_CAP:
+            if (is_cap(game, move)){
+                if (see(game, move, sp.mp_goodcap_margin)) {
+                    return true;
+                }
+            }
+            break;
+        case PICK_PROMO:
+            return is_promo(move);
+            break;
+        case PICK_KILLER:
+            if (!is_cap(game, move)){
+                    
+                return move == stack[ply].killers[0] || move == stack[ply].killers[1];
+            }
+            break;
+        case PICK_QUIET:
+            return !is_cap(game, move);
+            break;
+        case PICK_BAD_CAP:
+            if (is_cap(game, move)){
+                return true;
+            }
+            break;
+        default: break;
+    }
+    return false;
+}
+
+// returns -1 if none eligible
+static inline int16_t pick_next_move(Game * game, MovePicker * mp, SearchStack * stack, ThreadData * td, int ply){
+
+    int c = mp->current_index;
+    int best = c;
+    int16_t best_score = INT16_MIN;
+
+    int eligible_count = 0;
+    for (int i = c; i < mp->move_count; i++) {
+        int m = mp->ordering[i];
+        if (move_is_eligible(game, mp->moves[m], m, mp, stack, ply)){
+            eligible_count += 1;
+            if (mp->scores[m] == SCORE_NONE){
+                mp->scores[m] = score_move(game, stack, td, ply, mp->moves[m]);
+            }
+
+            if (mp->scores[m] > best_score) {
+                best_score = mp->scores[m];
+                best = i;
+            }
+        
+        }
             
-        }
-        
-    }
-    if (move_is_equal(move, &search_data->pv_table[ply][0])){
-        score += 9000000;
-    }
-    
-    if (move->type == CAPTURE || (move->type == PROMOTION && move->promotion_capture) || move->type == EN_PASSANT){
-        int s = mvv_lva[move->piece][move->capture_piece];
-        score += s  + 8000000;
-    } 
-    if (move->is_checking){
-        score += 7000000;
-    }
-    uint32_t refutation = get_refutation(game, &game->last_move);
-    if (refutation){
-        Move r;
-        unpack_move(refutation, &r);
-        if (move_is_equal(move, &r)){
-            score += 6000000;
-        }
-    }
-    if (has_countermove){
-        if (move_is_equal(move, &countermove)){
-            score += 5500000;
-        }
-    }
-    if (move->type == PROMOTION){
-        score += 5000000;
-    }
-    if (search_data){
-        if (move_is_equal(move, &search_data->killer_moves[ply][0]) || move_is_equal(move, &search_data->killer_moves[ply][1])){
-            score += 4000000;
-        }
-
-        int history = game->history_table[move->side][move->start_index][move->end_index];
-        // score += history;
-        score += history;
-        
     }
 
 
-    
-    return score;
+    int16_t index = -1;
+    if (eligible_count){
+        int tmp = mp->ordering[c];
+        mp->ordering[c] = mp->ordering[best];
+        mp->ordering[best] = tmp;
+
+        index = mp->ordering[c];
+        mp->current_index++;
+    }
+    return index;
 
 }
 
-static inline int sort_qmoves(Game * game, Move move_list[200], int move_count, Move * best_move, SearchData * search_data, int ply){
-    
-    // print_moves(move_list, move_count);
-    bool has_pv_move = false;
-    uint32_t countermove = get_countermove(game, &game->last_move);
-    Move c;
-    bool has_countermove = false;
-    bool has_refutation = false;
-    if (countermove){
-        has_countermove = true;
-        unpack_move(countermove, &c);
-    }
-    
-    int good_quiets = 0;
-    int moves = 0;
-    for (int i = 0; i < move_count; i++){
-        Move * move = &move_list[i];
-        move->score = score_qmove(game, move, search_data, ply, c, has_countermove, best_move);
-        if (move->score > -10000) moves++;
-    }
-    int maximum = moves;
-    partial_selection_sort(move_list, move_count, 15);
-    return maximum;
 
-}
 
 
 #endif
