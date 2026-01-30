@@ -235,8 +235,6 @@ typedef enum File {
 } File;
 
 typedef int16_t ContinuationHistory[PIECE_TYPES + 1][BOARD_MAX];
-// typedef struct Score { int16_t mg; int16_t eg; } Score;
-// typedef int16_t Score[2];
 typedef int32_t Score;
 
 typedef enum NodeType {

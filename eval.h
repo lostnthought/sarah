@@ -682,6 +682,7 @@ static inline int corrhist_eval(Game * game, ThreadData * td, SearchStack * stac
     int16_t cnp_b = td->corrhist_nonpawns_b[side][game->st->nonpawn_key[BLACK] & CORRHIST_MASK] * sp.corr_np_weight / sp.corrhist_weight;
 
     // material
+    // not in use
     int16_t cm = td->corrhist_material[side][game->st->material_key & CORRHIST_MASK] * sp.corr_mat_weight / sp.corrhist_weight;
     
     // kbn and kqr are taken straight from yukari. these are the highest performing corrhists and I can't thank them enough for the idea.
@@ -711,59 +712,6 @@ static inline int corrhist_eval(Game * game, ThreadData * td, SearchStack * stac
 
 
 
-// not being used currently, but the credit it to lync for some of this. just attempts to scale back eval if it is going to be a draw but our engine doesn't know it yet
-static inline void draw_detection(Game * game, int * eval){
-    
-    int e = *eval;
-    if (game->pieces[WHITE][PAWN] == 0 && game->pieces[BLACK][PAWN] == 0 && game->phase <= 5){
-
-        switch(game->phase){
-            case 5:
-                if (__builtin_popcountll(game->pieces[WHITE][ROOK]) == 1 && __builtin_popcountll(game->pieces[BLACK][ROOK]) == 1){
-                    e >>= 1;
-                } 
-                break;
-            case 4:
-                if (__builtin_popcountll(game->pieces[WHITE][ROOK]) != 0 &&
-                    (__builtin_popcountll(game->pieces[WHITE][BISHOP] | game->pieces[WHITE][KNIGHT]) != 0) &&
-                    __builtin_popcountll(game->pieces[BLACK][ROOK]) != 0 &&
-                    (__builtin_popcountll(game->pieces[BLACK][BISHOP] | game->pieces[BLACK][KNIGHT]) != 0)){
-                
-                    e >>= 1;
-                }
-                break;
-            case 3:
-                if (__builtin_popcountll(game->pieces[WHITE][KNIGHT] == 2 || __builtin_popcountll(game->pieces[BLACK][KNIGHT] == 2))){
-                    e = 0;
-                }
-                e >>= 1;
-                break;
-            case 2:
-                {
-                    int w_knights = __builtin_popcountll(game->pieces[WHITE][KNIGHT]);
-                    if ((w_knights + __builtin_popcountll(game->pieces[BLACK][KNIGHT]) == 2) ||
-                        w_knights + __builtin_popcountll(game->pieces[WHITE][BISHOP]) == 1){
-                            e = 0;
-                        }
-                }
-                break;
-            case 1:
-                break;
-            case 0:
-                e = 0;
-            default:
-                break;
-        }
-
-        
-
-        
-    }
-    *eval = e;
-    
-
-    
-}
 
 
 
@@ -811,21 +759,9 @@ static inline int evaluate(Game * game, ThreadData * td, SearchStack * stack, Si
     s += game->st->material_score[WHITE] - game->st->material_score[BLACK];
 
 
-    // this logic is commented out for now but is a lazy eval implementation. for spsa and tuning i have disabled it momentarily for stability, but will tune it later. it is also the reason why our pawn masks are only initialized after, to make everything as efficient as possible
 
     
-    // int pmg = 0;
-    // if (masks.passers[WHITE] & rank_masks[7] || masks.passers[WHITE] & rank_masks[6] || masks.passers[BLACK] & rank_masks[1] || masks.passers[BLACK] & rank_masks[0]) pmg += 740; 
-    // int l1 = 600 + pmg;
     int corrhist = corrhist_eval(game, td, stack, side);
-    // int l1e = ((eg * (MAX_PHASE - phase)) + (mg * phase)) / MAX_PHASE;
-
-    // l1e = side ? corrhist + l1e : corrhist - l1e; 
-    // if (l1e >= beta + l1 || l1e <= alpha - l1) {
-    //     search_data->lazy_cutoffs_s1 += 1;
-    //     *lazy = true;
-    //     return l1e;
-    // }
     
     // this logic is sort of expensive but necessary, we need to set up masks for eval before evaluating material because we need to know where each side attacks. it is actually possible to split this up a bit more and have another lazy stage (had it before), but would require refactor, retuning, and probably sacrificing some positional accuracy in evaluate_material
 
@@ -841,32 +777,6 @@ static inline int evaluate(Game * game, ThreadData * td, SearchStack * stack, Si
     generate_attack_mask_and_eval_mobility(game, WHITE, &masks, piece_attacks);
     generate_attack_mask_and_eval_mobility(game, BLACK, &masks, piece_attacks);
 
-    // king danger is here as a historic idea. it was used to push lazy even further by making a cheap king safety check instead of the full thing since king safety is expensive. so it is only actually used as a margin. however, it required incremental logic to keep attackers to the king zone updated in make / undo, which was painful and slow. now, our engine is much faster without it.
-
-    // int w_akz = 0, b_akz = 0;
-    // int w_kd = compute_king_danger(game, &masks, WHITE, &w_akz);
-    // int b_kd = compute_king_danger(game, &masks, BLACK, &b_akz);
-    // int mkd = MAX(w_kd, b_kd);
-    // mkd = KING_DANGER[(size_t)mkd];
-
-    // lazy stage 2
-    
-    // int smargin = 150 + mkd + pmg;
-    // int pe = ((eg * (MAX_PHASE - phase)) + (mg * phase)) / MAX_PHASE;
-
-    // if (side == WHITE){
-    
-    //     pe = corrhist + pe;
-    // } else {
-    //     pe = corrhist - pe;
-    
-    // }
-
-    // if (pe >= beta + smargin || pe <= alpha - smargin) {
-    //     search_data->lazy_cutoffs_s2 += 1;
-    //     *lazy = true;
-    //     return pe;
-    // }
 
     
 
@@ -903,11 +813,9 @@ static inline int evaluate(Game * game, ThreadData * td, SearchStack * stack, Si
     if (side == WHITE){
         
         int ee = corrhist + e;
-        // draw_detection(game, &ee);
         return ee * sp.eval_scale;
     } else {
         int ee = corrhist - e;
-        // draw_detection(game, &ee);
         return ee * sp.eval_scale;
         
     }
