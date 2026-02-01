@@ -1,5 +1,6 @@
 # Sarah
 ### Sarah is a chess engine written in C (and if it's online you can challenge it on [lichess](https://lichess.org/@/vixen_is_very_cool)). 
+* Some have asked for old versions of some files, so I have them in old_versions. These are genuinely just for historical purposes. The files themselves are warzones but I tried to upload the ones that represented early ideas for the engine.
 
 It didn't start in C, though. It started in Rust, at the start of 2025. It was bad. 
 
