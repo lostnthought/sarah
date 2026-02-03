@@ -1,5 +1,5 @@
 # Sarah
-### Sarah is a chess engine written in C (and if it's online you can challenge it on [lichess](https://lichess.org/@/vixen_is_very_cool)). 
+### Sarah is a chess engine written in C (and if it's online you can challenge it on [lichess](https://lichess.org/@/vixen_is_very_cool)). The video I made that runs through its development from start to finish and to share my love of chess programming with the world is [here](https://www.youtube.com/watch?v=QzS8HQ3dVWA).
 * Some have asked for old versions of some files, so I have them in old_versions. These are genuinely just for historical purposes. The files themselves are warzones but I tried to upload the ones that represented early ideas for the engine.
 
 It didn't start in C, though. It started in Rust, at the start of 2025. It was bad. 
@@ -12,14 +12,19 @@ And then I was informed that the name was taken. Earth-shattering, really. I am 
 
 Sarah is the name I came up with, and not because it follows the (objectifying? romantic?) tradition of men naming their cars or boats or what have you after women, but because it's also the name of my favorite label, the legendary sarah records. Which you should naturally check out if you aren't familiar. Also within the music tradition there is the dramatic and brooding "what sarah said" by death cab for cutie which I actually think is a good song even though some might hate it. There's also sara bareilles which doesn't have an h but I think she is one of those talented female singer-songwriters to come out of the early 2000s. Really that's where it ends, believe it or not there just aren't that many good songs named after sarah. Sarah records is more than enough for me.
 
-Sarah is UCI compliant in the same way that I'm government compliant. I have an ID and I begrudgingly follow the law. Don't expect me to do so with a smile on my face. Sarah's the same way. It's actually not *that* bad, but there is still no parsing for increment and no pondering implemented. Yet.
+Sarah is UCI compliant in the same way that I'm government compliant. I have an ID and I begrudgingly follow the law. Don't expect me to do so with a smile on my face. Sarah's the same way. It's actually not *that* bad, but there is still no pondering implemented. Yet.
 
 Anyway, here's the brief summary:
 - Pseudolegal move generation
 - Polyglot support via zobrist hashing
-- Evaluation with pawn hashing
-- Search, with all of the typical alpha-beta bells and whistles
-- Time control, which is honestly just one if statement
+- Handcrafted Evaluation with pawn hashing
+- Search(.c) (In order: Delta, QSEE, QChkPrune, RFP, Razoring, NMP, Probcut, IID, Extensions, LMP, Futility, ContPrune, SEE, SE, LMR)
+- Texel tuner (SGDM(R) and ADAMW(R)) (tuner.c)
+- SPSA tuner (spsa.c)
+- Hash key updates for each piece types
+- Corrective history for pawns, nonpawns, material, king + major, king + minor, continuation
+- Continuation history, capture history, and regular history
+- Stat tracking for each heuristic used in search
 
 I did spend a while documenting stuff with all of these little @briefs and whatever. It is a bit of a mess due to the absurd amount of inlining though.
 
