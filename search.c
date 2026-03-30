@@ -2,7 +2,7 @@
 #include "math.h"
 #include "move_generation.h"
 #include "types.h"
-#include "types_old.h"
+//#include "types_old.h"
 #include "utils.h"
 #include "magic.h"
 #include "zobrist.h"
