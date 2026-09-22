@@ -15,8 +15,8 @@
 #include "sort.h"
 #include "eval.h"
 #include "search.h"
-#include "./tables/tbconfig.h"
-#include "./tables/tbprobe.h"
+// #include "./tables/tbconfig.h"
+// #include "./tables/tbprobe.h"
 
 uint64_t rook_table[ROOK_TABLE_SIZE];
 uint64_t bishop_table[BISHOP_TABLE_SIZE];
