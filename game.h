@@ -3,18 +3,22 @@
 
 // #include "move_generation.h"
 // #include "move_generation.h"
-//#include "game_old.h"
+#include "game_old.h"
 #include "magic.h"
 #include "types.h"
 #include "math.h"
 #include "utils.h"
 #include "zobrist.h"
 #include "magic.h"
-#include "eval_constants.h"
+// #include "eval_constants.h"
 #include <stddef.h>
 // #include "tuner.h"
 
 
+static inline bool material_is_lone_king(Game * game, Side side){
+    if (game->pieces[side][KNIGHT] == 0 && game->pieces[side][BISHOP] == 0 && game->pieces[side][ROOK] == 0 && game->pieces[side][QUEEN] == 0) return true;
+    return false;
+}
 // must be called before making a move
 static inline bool is_double_push(Game * game, Move m){
     uint8_t from = move_from(m);
@@ -783,6 +787,36 @@ static inline void dump_state_keys(const StateInfo * st){
         count++;
     }
 }
+
+static inline bool draw_by_insufficient_material(Game * game){
+    if (game->pieces[WHITE][PAWN] || game->pieces[BLACK][PAWN] || game->pieces[WHITE][QUEEN] || game->pieces[WHITE][ROOK] || game->pieces[BLACK][QUEEN] || game->pieces[BLACK][ROOK]) return false;
+
+    bool lk_w = material_is_lone_king(game, WHITE);
+    bool lk_b = material_is_lone_king(game, BLACK);
+    ASSERT(game->pieces[WHITE][PAWN] == 0 && game->pieces[BLACK][PAWN] == 0);
+    if (lk_w && lk_b) return true;
+
+    if (lk_w){
+        bool b = game->pieces[BLACK][BISHOP], n = game->pieces[BLACK][KNIGHT];
+        if (b && !more_than_one(game->pieces[BLACK][BISHOP]) && !n){
+            return true;
+        }
+        if (n && !more_than_one(game->pieces[BLACK][KNIGHT]) && !b){
+            return true;
+        }
+    }
+    if (lk_b){
+        bool b = game->pieces[WHITE][BISHOP], n = game->pieces[WHITE][KNIGHT];
+        if (b && !more_than_one(game->pieces[WHITE][BISHOP]) && !n){
+            return true;
+        }
+        if (n && !more_than_one(game->pieces[WHITE][KNIGHT]) && !b){
+            return true;
+        }
+    }
+    return false;
+}
+
 
 static inline bool threefold(const StateInfo* st) {
     const StateInfo* cur = st;

@@ -147,6 +147,7 @@ uint64_t generate_slider_moves(ivec2 slider_deltas[4], int index, uint64_t block
         
         bool reached_end = false;
         int current_space = index;
+        if (slider_deltas[i].x == 0 && slider_deltas[i].y == 0) continue;
         while(true){
 
             int proposed_space = current_space + (slider_deltas[i].x + (slider_deltas[i].y * 8));
@@ -181,19 +182,15 @@ uint64_t generate_slider_moves(ivec2 slider_deltas[4], int index, uint64_t block
 }
 
 
-uint64_t * create_sliding_piece_table(ivec2 slider_deltas[4], int size, const MagicEntry  magics[64]){
+void create_sliding_piece_table(ivec2 slider_deltas[4], int size, uint64_t table[size], const MagicEntry  magics[64]){
 
-    if (!magics){
-        printf("NO MAGICS FOUND\n");
-        return NULL;
-    }
 
-    uint64_t * sliding_table = malloc(sizeof(uint64_t) * size);
+    // uint64_t * sliding_table = malloc(sizeof(uint64_t) * size);
 
-    if (!sliding_table){
-        printf("SLIDING TABLE ALLOCATION FAIL\n");
-        return NULL;
-    }
+    // if (!sliding_table){
+    //     printf("SLIDING TABLE ALLOCATION FAIL\n");
+    //     return NULL;
+    // }
 
     for (int i = 0; i < BOARD_MAX; i++){
         const MagicEntry * entry = &magics[i];
@@ -208,7 +205,7 @@ uint64_t * create_sliding_piece_table(ivec2 slider_deltas[4], int size, const Ma
 
             uint64_t moves = generate_slider_moves(slider_deltas, i, blockers);
 
-            sliding_table[magic_hash_index(entry, blockers)] = moves;
+            table[magic_hash_index(entry, blockers)] = moves;
             
             blockers = (blockers - mask) & mask;
             // print_board(blockers, BLACK_PAWN);
@@ -217,22 +214,21 @@ uint64_t * create_sliding_piece_table(ivec2 slider_deltas[4], int size, const Ma
         
     }
     
-    return sliding_table;
 }
 
 
 void init_sliding_piece_tables(Game * game){
 
-    game->rook_table = 
         create_sliding_piece_table(
         (ivec2[]){{-1, 0}, {0, 1}, {1, 0}, {0, -1}}, 
-        ROOK_TABLE_SIZE, 
+        ROOK_TABLE_SIZE,
+        rook_table, 
         ROOK_MAGICS);
 
-    game->bishop_table = 
         create_sliding_piece_table(
         (ivec2[]){{-1, -1}, {-1, 1}, {1, 1}, {1, -1}}, 
         BISHOP_TABLE_SIZE,
+        bishop_table,
         BISHOP_MAGICS);
 
     
@@ -258,19 +254,19 @@ void init_directional_ray_tables(){
     }
     ivec2 se[4] = {{1, -1}, {0,0}, {0,0}, {0,0}};
     for (int i = 0; i < 64; i++){
-        DIAGONAL_RAYS[SOUTHEAST][i] = generate_slider_moves(s, i, 0);
+        DIAGONAL_RAYS[SOUTHEAST][i] = generate_slider_moves(se, i, 0);
     }
     ivec2 ne[4] = {{1, 1}, {0,0}, {0,0}, {0,0}};
     for (int i = 0; i < 64; i++){
-        DIAGONAL_RAYS[NORTHEAST][i] = generate_slider_moves(n, i, 0);
+        DIAGONAL_RAYS[NORTHEAST][i] = generate_slider_moves(ne, i, 0);
     }
     ivec2 sw[4] = {{-1, -1}, {0,0}, {0,0}, {0,0}};
     for (int i = 0; i < 64; i++){
-        DIAGONAL_RAYS[SOUTHWEST][i] = generate_slider_moves(w, i, 0);
+        DIAGONAL_RAYS[SOUTHWEST][i] = generate_slider_moves(sw, i, 0);
     }
     ivec2 nw[4] = {{-1, 1}, {0,0}, {0,0}, {0,0}};
     for (int i = 0; i < 64; i++){
-        DIAGONAL_RAYS[NORTHWEST][i] = generate_slider_moves(e, i, 0);
+        DIAGONAL_RAYS[NORTHWEST][i] = generate_slider_moves(nw, i, 0);
     }
 
     

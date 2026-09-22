@@ -3,9 +3,6 @@
 
 #include "types.h"
 
-#define ROOK_TABLE_SIZE 102400
-
-#define BISHOP_TABLE_SIZE 5248
 
 
 static inline size_t magic_hash_index(const MagicEntry * entry, uint64_t blockers){
@@ -14,14 +11,14 @@ static inline size_t magic_hash_index(const MagicEntry * entry, uint64_t blocker
     
 };
 
-static inline uint64_t fetch_bishop_moves(Game * game, int index, uint64_t blockers){
-  return game->bishop_table[magic_hash_index(&BISHOP_MAGICS[index], blockers)];
+static inline uint64_t fetch_bishop_moves(int index, uint64_t blockers){
+  return bishop_table[magic_hash_index(&BISHOP_MAGICS[index], blockers)];
 }
-static inline uint64_t fetch_rook_moves(Game * game, int index, uint64_t blockers){
-  return game->rook_table[magic_hash_index(&ROOK_MAGICS[index], blockers)];
+static inline uint64_t fetch_rook_moves(int index, uint64_t blockers){
+  return rook_table[magic_hash_index(&ROOK_MAGICS[index], blockers)];
 }
-static inline uint64_t fetch_queen_moves(Game * game, int index, uint64_t blockers){
-  return game->bishop_table[magic_hash_index(&BISHOP_MAGICS[index], blockers)] | game->rook_table[magic_hash_index(&ROOK_MAGICS[index], blockers)];
+static inline uint64_t fetch_queen_moves(int index, uint64_t blockers){
+  return bishop_table[magic_hash_index(&BISHOP_MAGICS[index], blockers)] | rook_table[magic_hash_index(&ROOK_MAGICS[index], blockers)];
 }
 
 
