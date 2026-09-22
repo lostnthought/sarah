@@ -150,6 +150,15 @@ typedef enum UCICommand {
   
 } UCICommand;
 
+typedef struct EngineOptions {
+
+  bool debug_info;
+  int time_per_move;
+  int max_depth;
+  int threads;
+  
+} EngineOptions;
+
 
 typedef enum CommandType {
 
@@ -161,9 +170,13 @@ typedef enum CommandType {
   COMMAND_BESTMOVE,
   COMMAND_GET_KEY,
   COMMAND_AUTOMATE,
+  COMMAND_DEBUG,
+  COMMAND_THREADS,
+  COMMAND_DISPLAY_OPTIONS,
   COMMAND_DEBUG_CHECK_HASH,
   COMMAND_DEBUG_EVALUATE,
   COMMAND_UCI,
+  COMMAND_HELP,
   COMMAND_QUIT
 
 } CommandType;
@@ -436,6 +449,9 @@ typedef struct SearchParams {
   int16_t corr_np_weight;
   int16_t corr_mat_weight;
   int16_t corr_ch_weight;
+  int16_t l1;
+  int16_t l2;
+  int16_t l3;
   
   int16_t corr_kbn_weight;
   int16_t corr_kqr_weight;
@@ -954,6 +970,7 @@ typedef struct ThreadData {
 } ThreadData;
 
 
+extern EngineOptions eo;
 extern SearchParams sp;
 extern Score eval_params[2048];
 extern ParamIndex ep_idx;

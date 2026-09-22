@@ -444,6 +444,12 @@ void handle_input(Game * game){
             command = COMMAND_GET_KEY;
         } else if (strcmp(l, "auto") == 0){
             command = COMMAND_AUTOMATE;
+        } else if (strcmp(l, "debug") == 0){
+            command = COMMAND_DEBUG;
+        } else if (strcmp(l, "threads") == 0){
+            command = COMMAND_THREADS;
+        } else if (strcmp(l, "displayoptions") == 0){
+            command = COMMAND_DISPLAY_OPTIONS;
         } else if (strcmp(l, "checkhash") == 0){
             command = COMMAND_DEBUG_CHECK_HASH;
         } else if (strcmp(l, "eval") == 0){
@@ -611,6 +617,97 @@ void handle_input(Game * game){
                     }
                 }
                 break;
+            case COMMAND_THREADS:
+                {
+                    int t = 1;
+                    l = strtok(NULL, "\n");
+                    if (l){
+                        t = strtod(l, NULL);
+                        eo.threads = t;
+                    }
+                    printf("Threads set to %d\n", t);
+                }
+                break;
+            case COMMAND_DISPLAY_OPTIONS:
+                {
+                    printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+                    "Here are the available UCI options (syntax: setoption name <name> value <value>):\n",
+                    "- debug\n",
+                    "- threads\n",
+                    "- eval_scale\n",
+                    "- aspiration_base\n",
+                    "- aspiration_mul\n",
+                    "- qdelta_margin\n",
+                    "- qsee_margin\n",
+                    "- check_prune_margin\n",
+                    "- rfp_mul\n",
+                    "- rfp_base\n",
+                    "- rfp_improving\n",
+                    "- rfp_depth\n",
+                    "- razor_depth\n",
+                    "- razor_base\n",
+                    "- razor_mul\n",
+                    "- razor_improving\n",
+                    "- nmp_mul\n",
+                    "- nmp_base\n",
+                    "- nmp_slope\n",
+                    "- probcut_depth\n",
+                    "- probcut_base\n",
+                    "- probcut_improving\n",
+                    "- iid_depth\n",
+                    "- lmr_depth\n",
+                    "- lmr_move_start\n",
+                    "- lmr_hd\n",
+                    "- lmr_cap_mul\n",
+                    "- lmr_cap_base\n",
+                    "- lmr_quiet_mul\n",
+                    "- lmr_quiet_base\n",
+                    "- lmp_depth\n",
+                    "- lmp_base\n",
+                    "- lmp_improving\n",
+                    "- lmp_depth_pow\n",
+                    "- futility_depth\n",
+                    "- futility_base\n",
+                    "- futility_mul\n",
+                    "- futility_hist_mul\n",
+                    "- futility_improving\n",
+                    "- chist_depth\n",
+                    "- chist1_margin\n",
+                    "- chist2_margin\n",
+                    "- mp_goodcap_margin\n",
+                    "- chist1_scale\n",
+                    "- chist2_scale\n",
+                    "- chist4_scale\n",
+                    "- chist6_scale\n",
+                    "- see_depth\n",
+                    "- see_quiet_margin\n",
+                    "- see_nonquiet_margin\n",
+                    "- se_depth\n",
+                    "- se_depth_margin\n",
+                    "- qhistory_base\n",
+                    "- qhistory_mul\n",
+                    "- qhpen_base\n",
+                    "- qhpen_mul\n",
+                    "- chistory_base\n",
+                    "- chistory_mul\n",
+                    "- chpen_base\n",
+                    "- chpen_mul\n",
+                    "- beta_bonus\n",
+                    "- corr_depth_base\n",
+                    "- corrhist_grain\n",
+                    "- corrhist_weight\n",
+                    "- corrhist_max\n",
+                    "- corr_pawn_weight\n",
+                    "- corr_np_weight\n",
+                    "- corr_mat_weight\n",
+                    "- corr_kbn_weight\n",
+                    "- corr_kqr_weight\n",
+                    "- corr_ch_weight\n",
+                    "- l1\n",
+                    "- l2\n",
+                    "- l3\n");
+                }
+                break;
             case COMMAND_DEBUG_CHECK_HASH:
                 {
                     SearchFlags flags;
@@ -641,7 +738,7 @@ void handle_input(Game * game){
             case COMMAND_UCI:
                 {
                     game->uci_mode = true;
-                    printf("id name Sarah 2.1\n");
+                    printf("id name Sarah 1.0\n");
                     printf("uciok\n");
                     fflush(stdout);
 
@@ -655,16 +752,18 @@ void handle_input(Game * game){
                 break;
             case COMMAND_HELP:
                 {
-                    printf("%s%s%s%s%s%s%s%s%s%s%s%s",
+                    printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
                     "Here are the available commands:\n",
                     "- fen [fen]: Sets board to given fen.\n",
-                    "- perft [depth]: performs a perft (move generation verification) to given depth on the current position",
+                    "- perft [depth]: performs a perft (move generation verification) to given depth on the current position\n",
                     "- display: displays the current position and fen\n",
                     "- generate: lists all pseudolegal moves for the given position\n",
                     "- bestmove [depth]: performs a search to given depth to find the best move\n",
                     "- move [move]: plays a move given in algebraic notation\n",
                     "- auto: plays the engine against itself from the current position\n",
                     "- debug: toggles debug information for the current (default = true)\n",
+                    "- displayoptions: displays all uci options\n",
+                    "- threads [count]: sets engine thread amount\n",
                     "- help: displays this dialogue\n",
                     "- quit: exits the program\n",
                     "- uci: enter uci mode\n");

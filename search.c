@@ -2,7 +2,7 @@
 #include "math.h"
 #include "move_generation.h"
 #include "types.h"
-//#include "types_old.h"
+// #include "types_old.h"
 #include "utils.h"
 #include "magic.h"
 #include "zobrist.h"
@@ -99,6 +99,10 @@ SearchParams sp = {
     .corr_kbn_weight = 256,
     .corr_kqr_weight = 256,
     .eval_scale = 1,
+    .l1 = 1500,
+    .l2 = 700,
+    .l3 = 250
+
     
     
 };
@@ -106,136 +110,207 @@ SearchParams sp = {
 
 void init_search_params(){
     sp = (SearchParams){
-        .eval_scale = (1.019307),
-        .aspiration_base = round(63.118479),
-        .aspiration_mul = round(2.986240),
-        .qdelta_margin = round(287.355125),
-        .qsee_margin = round(-67.062192),
-        .rfp_depth = round(4.240283),
-        .rfp_base = round(3.793856),
-        .rfp_mul = round(36.525337),
-        .rfp_improving = round(69.728985),
-        .lmr_depth = round(2.525057),
-        .lmr_move_start = round(3.167252),
-        .lmr_hd = round(16759.866499),
-        .lmr_quiet_mul = (0.613093),
-        .lmr_quiet_base = (1.224905),
-        .lmp_depth = round(3.908177),
-        .lmp_base = round(8.140433),
-        .lmp_improving = round(0.974697),
-        .lmp_depth_pow = round(1.475621),
-        .futility_depth = round(2.499304),
-        .futility_base = round(209.091976),
-        .futility_mul = round(209.003208),
-        .futility_hist_mul = round(39.353611),
-        .futility_improving = round(20.945189),
-        .razor_depth = round(1.281307),
-        .razor_base = round(248.283317),
-        .razor_mul = round(112.272188),
-        .razor_improving = round(132.419649),
-        .nmp_base = round(10.846523),
-        .nmp_mul = round(625.883057),
-        .nmp_slope = round(319.607574),
-        .probcut_depth = round(7.202014),
-        .probcut_improving = round(73.065723),
-        .probcut_base = round(128.960246),
-        .iid_depth = round(5.651903),
-        .chist_depth = round(3.200053),
-        .chist1_margin = round(-895.366252),
-        .chist2_margin = round(-915.104552),
-        .mp_goodcap_margin = round(-107.621573),
-        .chist1_scale = (1.033212),
-        .chist2_scale = (3.422037),
-        .chist4_scale = (2.577208),
-        .chist6_scale = (3.394977),
-        .see_depth = round(2.122899),
-        .see_quiet_margin = round(-75.950593),
-        .see_nonquiet_margin = round(-105.155207),
-        .se_depth = round(6.929319),
-        .se_depth_margin = (1.257939),
-        .qhistory_mul = round(236.463088),
-        .qhistory_base = round(155.487110),
-        .qhpen_mul = round(163.899758),
-        .qhpen_base = round(85.329360),
-        .chistory_mul = round(136.236830),
-        .chistory_base = round(223.462465),
-        .chpen_mul = round(165.492487),
-        .chpen_base = round(91.900729),
-        .beta_bonus = round(50.227529),
-        .corrhist_grain = round(135.298237),
-        .corrhist_weight = round(260.425772),
-        .corrhist_max = round(8217.611414),
-        .corr_depth_base = round(1.111684),
-        .corr_ch_weight = round(283.542309),
-        .corr_np_weight = round(102.810894),
-        .corr_pawn_weight = round(120.802045),
-        .corr_kbn_weight = round(5.997313),
-        .corr_kqr_weight = round(268.881605),
-        // .eval_scale = (0.849076),
-        // .aspiration_base = 80,
-        // .aspiration_mul = 8,
-        // .qdelta_margin = round(243.393743),
-        // .qsee_margin = round(-91.101305),
-        // .rfp_depth = round(3.710281),
-        // .rfp_base = round(8.494243),
-        // .rfp_mul = round(43.347654),
-        // .rfp_improving = round(93.306239),
-        // .lmr_depth = 3,
-        // .lmr_move_start = 4,
-        // .lmr_hd = 16834,
-        // .lmr_quiet_mul = (0.652236),
-        // .lmr_quiet_base = (0.873846),
-        // .lmp_depth = round(3.183267),
-        // .lmp_base = round(7.850076),
-        // .lmp_improving = (0.883491),
-        // .lmp_depth_pow = (1.434109),
-        // .futility_depth = round(2.411216),
-        // .futility_base = round(229.153387),
-        // .futility_mul = round(214.360421),
-        // .futility_hist_mul = round(60.343354),
-        // .futility_improving = round(38.951833),
-        // .razor_depth = round(2.163725),
-        // .razor_base = round(181.764409),
-        // .razor_mul = round(143.225551),
-        // .razor_improving = round(61.971665),
-        // .nmp_base = round(21.943308),
-        // .nmp_mul = round(828.867797),
-        // .nmp_slope = round(365.493636),
-        // .probcut_depth = round(5.562112),
-        // .probcut_improving = round(6.841408),
-        // .probcut_base = round(172.568515),
-        // .iid_depth = round(5.000000),
-        // .chist_depth = round(1.837473),
-        // .chist1_margin = round(-464.550515),
-        // .chist2_margin = round(-233.883457),
-        // .mp_goodcap_margin = round(-54.772720),
-        // .chist1_scale = 1,
-        // .chist2_scale = 1.5,
-        // .chist4_scale = 2.2,
-        // .chist6_scale = 3,
-        // .see_depth = round(2.661332),
-        // .see_quiet_margin = round(-54.769775),
-        // .see_nonquiet_margin = round(-102.003431),
-        // .se_depth = round(6.035922),
-        // .se_depth_margin = (1.426201),
-        // .qhistory_mul = round(192.837480),
-        // .qhistory_base = round(124.039743),
-        // .qhpen_mul = round(139.373680),
-        // .qhpen_base = round(83.632596),
-        // .chistory_mul = round(157.020238),
-        // .chistory_base = round(193.782287),
-        // .chpen_mul = round(144.779065),
-        // .chpen_base = round(89.821511),
-        // .beta_bonus = round(35.177930),
-        // .corrhist_grain = round(218.374329),
-        // .corrhist_weight = round(201.547721),
-        // .corrhist_max = round(8164.545318),
-        // .corr_depth_base = round(1.333025),
-        // .corr_ch_weight = round(225.905064),
-        // .corr_np_weight = round(176.767981),
-        // .corr_pawn_weight = round(173.414003),
-        // .corr_kbn_weight = round(122.453070),
-        // .corr_kqr_weight = round(225.481897),
+        // .eval_scale = 0.867832,
+        // .aspiration_base = round(49.552365),
+        // .aspiration_mul = round(1.927232),
+        // .qdelta_margin = round(285.275619),
+        // .qsee_margin = round(-92.163366),
+        // .rfp_depth = round(5.042126),
+        // .rfp_base = round(8.367888),
+        // .rfp_mul = round(48.645306),
+        // .rfp_improving = round(43.463237),
+        // .lmr_depth = round(1.567382),
+        // .lmr_move_start = round(2.399267),
+        // .lmr_hd = round(16888.526265),
+        // .lmr_quiet_mul = (0.698167),
+        // .lmr_quiet_base = (1.113928),
+        // .lmp_depth = round(3.622340),
+        // .lmp_base = round(9.241078),
+        // .lmp_improving = round(1.117140),
+        // .lmp_depth_pow = (1.372551),
+        // .futility_depth = round(3.522623),
+        // .futility_base = round(150.373995),
+        // .futility_mul = round(233.722816),
+        // .futility_hist_mul = round(88.626166),
+        // .futility_improving = round(76.181202),
+        // .razor_depth = round(1.126304),
+        // .razor_base = round(208.926267),
+        // .razor_mul = round(133.770656),
+        // .razor_improving = round(166.412952),
+        // .nmp_base = round(15.255982),
+        // .nmp_mul = round(633.285747),
+        // .nmp_slope = round(339.162912),
+        // .probcut_depth = round(6.853680),
+        // .probcut_improving = round(114.691417),
+        // .probcut_base = round(146.009606),
+        // .iid_depth = round(6.975103),
+        // .chist_depth = 0,
+        // .chist1_margin = round(-867.868086),
+        // .chist2_margin = round(-916.313066),
+        // .mp_goodcap_margin = round(-78.495132),
+        // .chist1_scale = (1.735650),
+        // .chist2_scale = (4.014314),
+        // .chist4_scale = (1.372542),
+        // .chist6_scale = (2.832553),
+        // .see_depth = round(2.825415),
+        // .see_quiet_margin = round(-84.449498),
+        // .see_nonquiet_margin = round(-163.889400),
+        // .se_depth = round(7.055914),
+        // .se_depth_margin = (1.358795),
+        // .qhistory_mul = round(239.055806),
+        // .qhistory_base = round(199.032974),
+        // .qhpen_mul = round(156.962265),
+        // .qhpen_base = round(83.001220),
+        // .chistory_mul = round(170.448862),
+        // .chistory_base = round(233.672665),
+        // .chpen_mul = round(169.650013),
+        // .chpen_base = round(90.532623),
+        // .beta_bonus = round(29.537838),
+        // .corrhist_grain = round(183.969848),
+        // .corrhist_weight = round(282.869606),
+        // .corrhist_max = round(8120.377607),
+        // .corr_depth_base = round(1.215218),
+        // .corr_mat_weight = 0,
+        // .corr_ch_weight = round(272.164395),
+        // .corr_np_weight = round(105.171330),
+        // .corr_pawn_weight = round(128.156045),
+        // .corr_kbn_weight = round(186.670765),
+        // .corr_kqr_weight = round(221.204872),
+        // .l1 = 1500,
+        // .l2 = 700,
+        // .l3 = 250
+
+        .eval_scale = (0.792833),
+        .aspiration_base = round(37.512974),
+        .aspiration_mul = round(6.301447),
+        .qdelta_margin = round(249.076316),
+        .qsee_margin = round(-142.897158),
+        .rfp_depth = round(6.619329),
+        .rfp_base = round(17.693114),
+        .rfp_mul = round(29.547104),
+        .rfp_improving = round(38.410960),
+        .lmr_depth = round(1.998392),
+        .lmr_move_start = round(1.711652),
+        .lmr_hd = round(16789.211849),
+        .lmr_quiet_mul = (0.695674),
+        .lmr_quiet_base = (1.248143),
+        .lmp_depth = round(5.364719),
+        .lmp_base = round(9.545293),
+        .lmp_improving = (1.010931),
+        .lmp_depth_pow = (1.643927),
+        .futility_depth = round(3.049064),
+        .futility_base = round(141.460443),
+        .futility_mul = round(138.970385),
+        .futility_hist_mul = round(101.053583),
+        .futility_improving = round(95.255183),
+        .razor_depth = round(2.350590),
+        .razor_base = round(222.934496),
+        .razor_mul = round(154.910793),
+        .razor_improving = round(150.298749),
+        .nmp_base = round(19.623037),
+        .nmp_mul = round(666.294952),
+        .nmp_slope = round(360.344681),
+        .probcut_depth = round(6.267383),
+        .probcut_improving = round(109.726265),
+        .probcut_base = round(160.794254),
+        .iid_depth = round(5.098228),
+        .mp_goodcap_margin = round(-59.382467),
+        .chist1_scale = (2.260148),
+        .chist2_scale = (3.911770),
+        .chist4_scale = (0.728489),
+        .chist6_scale = (3.332175),
+        .see_depth = round(5.168521),
+        .see_quiet_margin = round(-63.833667),
+        .see_nonquiet_margin = round(-163.466341),
+        .se_depth = round(5.000000),
+        .se_depth_margin = (1.098389),
+        .qhistory_mul = round(240.450833),
+        .qhistory_base = round(217.618148),
+        .qhpen_mul = round(184.701608),
+        .qhpen_base = round(109.490749),
+        .chistory_mul = round(153.253600),
+        .chistory_base = round(223.588119),
+        .chpen_mul = round(148.795172),
+        .chpen_base = round(116.946800),
+        .beta_bonus = round(36.746291),
+        .corrhist_grain = round(215.539886),
+        .corrhist_weight = round(243.634934),
+        .corrhist_max = round(8155.459579),
+        .corr_depth_base = round(1.426263),
+        .corr_ch_weight = round(301.692110),
+        .corr_mat_weight = round(36.429538),
+        .corr_np_weight = round(171.330429),
+        .corr_pawn_weight = round(60.341929),
+        .corr_kbn_weight = round(158.324712),
+        .corr_kqr_weight = round(236.397979),
+        .l1 = round(1457.574507),
+        .l2 = round(709.900807),
+        .l3 = round(261.414822),
+        // .eval_scale = (1.019307),
+        // .aspiration_base = round(63.118479),
+        // .aspiration_mul = round(2.986240),
+        // .qdelta_margin = round(287.355125),
+        // .qsee_margin = round(-67.062192),
+        // .rfp_depth = round(4.240283),
+        // .rfp_base = round(3.793856),
+        // .rfp_mul = round(36.525337),
+        // .rfp_improving = round(69.728985),
+        // .lmr_depth = round(2.525057),
+        // .lmr_move_start = round(3.167252),
+        // .lmr_hd = round(16759.866499),
+        // .lmr_quiet_mul = (0.613093),
+        // .lmr_quiet_base = (1.224905),
+        // .lmp_depth = round(3.908177),
+        // .lmp_base = round(8.140433),
+        // .lmp_improving = round(0.974697),
+        // .lmp_depth_pow = round(1.475621),
+        // .futility_depth = round(2.499304),
+        // .futility_base = round(209.091976),
+        // .futility_mul = round(209.003208),
+        // .futility_hist_mul = round(39.353611),
+        // .futility_improving = round(20.945189),
+        // .razor_depth = round(1.281307),
+        // .razor_base = round(248.283317),
+        // .razor_mul = round(112.272188),
+        // .razor_improving = round(132.419649),
+        // .nmp_base = round(10.846523),
+        // .nmp_mul = round(625.883057),
+        // .nmp_slope = round(319.607574),
+        // .probcut_depth = round(7.202014),
+        // .probcut_improving = round(73.065723),
+        // .probcut_base = round(128.960246),
+        // .iid_depth = round(5.651903),
+        // .chist_depth = round(3.200053),
+        // .chist1_margin = round(-895.366252),
+        // .chist2_margin = round(-915.104552),
+        // .mp_goodcap_margin = round(-107.621573),
+        // .chist1_scale = (1.033212),
+        // .chist2_scale = (3.422037),
+        // .chist4_scale = (2.577208),
+        // .chist6_scale = (3.394977),
+        // .see_depth = round(2.122899),
+        // .see_quiet_margin = round(-75.950593),
+        // .see_nonquiet_margin = round(-105.155207),
+        // .se_depth = round(6.929319),
+        // .se_depth_margin = (1.257939),
+        // .qhistory_mul = round(236.463088),
+        // .qhistory_base = round(155.487110),
+        // .qhpen_mul = round(163.899758),
+        // .qhpen_base = round(85.329360),
+        // .chistory_mul = round(136.236830),
+        // .chistory_base = round(223.462465),
+        // .chpen_mul = round(165.492487),
+        // .chpen_base = round(91.900729),
+        // .beta_bonus = round(50.227529),
+        // .corrhist_grain = round(135.298237),
+        // .corrhist_weight = round(260.425772),
+        // .corrhist_max = round(8217.611414),
+        // .corr_depth_base = round(1.111684),
+        // .corr_ch_weight = round(283.542309),
+        // .corr_np_weight = round(102.810894),
+        // .corr_pawn_weight = round(120.802045),
+        // .corr_kbn_weight = round(5.997313),
+        // .corr_kqr_weight = round(268.881605),
 
         
     };
@@ -353,7 +428,7 @@ int quiesce(NodeType nt, Game * game, SearchStack * stack, int alpha, int beta, 
             return best_score;
         } 
 
-        if (best_score > alpha){
+        if (pv_node && best_score > alpha){
             alpha = best_score;
         }
         futility_stand = eval + sp.qdelta_margin;
@@ -418,7 +493,7 @@ int quiesce(NodeType nt, Game * game, SearchStack * stack, int alpha, int beta, 
         if (   !pv_node
             && !is_in_check
             && !is_checking
-            && !is_tt_move
+            && legal_moves > 1
             && mt != PROMOTION)
         {
 
@@ -435,7 +510,7 @@ int quiesce(NodeType nt, Game * game, SearchStack * stack, int alpha, int beta, 
             && !is_in_check
             && !is_checking
             && mt != PROMOTION
-            && !is_tt_move)
+            && legal_moves > 1)
         {
             if (!see(game, m, sp.qsee_margin)){
                 search_data->q_see_prunes += 1;
@@ -447,11 +522,11 @@ int quiesce(NodeType nt, Game * game, SearchStack * stack, int alpha, int beta, 
         // if (   !pv_node
         //     && !is_in_check
         //     && is_checking
-        //     && !is_tt_move
+        //     && legal_moves > 1
         //     && mt != PROMOTION
         //     && !is_capture
         //     && !check_is_dangerous(game, m, futility_stand, beta)
-        //     && eval + sp.check_prune_margin < beta) {
+        //     && eval + sp.check_prune_margin < alpha) {
         //         search_data->check_prunes += 1;
         //         continue;
         //     }
@@ -548,7 +623,7 @@ int search(NodeType nt, Game * game, SearchStack * stack, int alpha, int  beta, 
     assert(pv_node || alpha == beta - 1);
 
     // TODO detect other draws. i have the stuff already
-    if (threefold(game->st) || game->st->rule50 >= 102){
+    if (threefold(game->st) || game->st->rule50 >= 102 || draw_by_insufficient_material(game)){
         return 0;
     }
 
@@ -699,7 +774,7 @@ int search(NodeType nt, Game * game, SearchStack * stack, int alpha, int  beta, 
         if (game->st->en_passant_index != -1){
             if (pawn_captures[!game->side_to_move][game->st->en_passant_index] & game->pieces[game->side_to_move][PAWN]) {
 
-                game->st->key ^= get_en_passant_random(game->st->en_passant_index);
+                    game->st->key ^= get_en_passant_random(game->st->en_passant_index);
             }
 
         }
@@ -812,7 +887,7 @@ int search(NodeType nt, Game * game, SearchStack * stack, int alpha, int  beta, 
 
 
     // internal iterative deepening
-    if (depth >= sp.iid_depth && !tt_move) {
+    if (depth >= sp.iid_depth && !tt_move && stack->excluded_move == 0) {
 
         search(nt, game, stack, alpha, beta, depth - (sp.iid_depth - 1), search_data, ply, extensions, true, td, checked, cut_node);
 
@@ -913,7 +988,7 @@ int search(NodeType nt, Game * game, SearchStack * stack, int alpha, int  beta, 
             r -= (float)mscore / sp.lmr_hd;
             r -= pv_node * 2;
             r -= is_checking || is_in_check;
-            r += cut_node * 2;
+            r += cut_node;
             
             // -2 because reduction is initialized to 1
             r = MAX(MIN(r, new_depth - 2), 0);
@@ -948,10 +1023,10 @@ int search(NodeType nt, Game * game, SearchStack * stack, int alpha, int  beta, 
                  }
             }
 
-            if (pred_depth <= sp.chist_depth && (*chist[0])[piece][move_to(m)] < sp.chist1_margin && (*chist[1])[piece][move_to(m)] < sp.chist2_margin && !is_capture){
-                search_data->chist_prunes += 1;
-                continue;
-            }
+            // if (pred_depth <= sp.chist_depth && (*chist[0])[piece][move_to(m)] < sp.chist1_margin && (*chist[1])[piece][move_to(m)] < sp.chist2_margin && !is_capture){
+            //     search_data->chist_prunes += 1;
+            //     continue;
+            // }
 
             // see pruning
             // discards moves if they lose statically, margin scales with depth
@@ -976,7 +1051,6 @@ int search(NodeType nt, Game * game, SearchStack * stack, int alpha, int  beta, 
         // check if the tt move is much better than all other moves by excluding it from the search
         if (   depth >= sp.se_depth
             && tt_entry
-            && tt_move
             && m == tt_move
             && stack[ply].excluded_move == 0
             && e == 0)
@@ -1033,7 +1107,7 @@ int search(NodeType nt, Game * game, SearchStack * stack, int alpha, int  beta, 
             }
 
             // pv search / research
-            if (pv_node && (legal_moves == 1 || (current_score > alpha))){
+            if (pv_node && (legal_moves == 1 || (current_score > alpha && current_score < beta))){
                 current_score = -search(PV, game, stack+1, -beta, -alpha , new_depth - 1, search_data, ply + 1, extensions + extension, false, td, is_checking, false);
             }
 
@@ -1140,19 +1214,21 @@ int search(NodeType nt, Game * game, SearchStack * stack, int alpha, int  beta, 
         }
 
 
-        // if score > beta, score must be > static eval
-        // this must cause some edge case where we are failing high but our static eval was already so incredibly good that the value is somehow underneath it, not quite sure
-        // if we didn't raise alpha or fail high, the score must be less than the static eval. what i think this signifies is that we need to be moving in the direction of the bound. if we do not raise alpha, we have to be moving downward, if we fail high, we need to be moving upward. it makes some sense to remove other entries from corrhist since they might give incorrect indications for score bias.
-        if (!is_in_check
-        && !cap_or_promo
-        && (hash_type == EXACT
-        || (score >= beta && score >= stand)
-        || score <= alpha && score <= stand)){
-            update_corrhist(game, td, stack, game->side_to_move, depth, score - stand);
-        }
 
     }
 
+    // if score > beta, score must be > static eval
+    // this must cause some edge case where we are failing high but our static eval was already so incredibly good that the value is somehow underneath it, not quite sure
+    // if we didn't raise alpha or fail high, the score must be less than the static eval. what i think this signifies is that we need to be moving in the direction of the bound. if we do not raise alpha, we have to be moving downward, if we fail high, we need to be moving upward. it makes some sense to remove other entries from corrhist since they might give incorrect indications for score bias.
+    if (!is_in_check
+    && new_best
+    && !is_cap(game, new_best)
+    && !is_promo(new_best)
+    && (hash_type == EXACT
+    || (score >= beta && score >= stand)
+    || score <= alpha && score <= stand)){
+        update_corrhist(game, td, stack, game->side_to_move, depth, score - stand);
+    }
 
     
     return score;
@@ -1215,7 +1291,7 @@ void * search_thread(void * thread_data){
         td->game.st = &td->state_stack[td->last_state - 1];
     }
     // draw detection using that new state link
-    if (threefold(td->game.st) || td->game.st->rule50 >= 102){
+    if (threefold(td->game.st) || td->game.st->rule50 >= 102 || draw_by_insufficient_material(&td->game)){
         search_data->flags.three_fold_repetition = true;
         atomic_store(&root->game_end, true);
         atomic_store(&root->stop, true);
@@ -1371,9 +1447,16 @@ Move iterative_search(Game * game, SearchFlags * flags){
 
     double start_time = now_seconds();
     double max_time = flags->max_time;
+    bool debug_info = eo.debug_info;
+    if (flags){
+        if (!flags->uci){
+            max_time = eo.time_per_move;
+            MAX_DEPTH = eo.max_depth;
+        }
+    }
 
     // thread count for now is simply hardcoded, TODO i need to write a way to set it in a command
-    int thread_count = MAX(MIN(flags->threads, 8), 1);
+    int thread_count = MAX(MIN(eo.threads, 8), 3);
 
     int best_depth = 1;
 
@@ -1405,7 +1488,7 @@ Move iterative_search(Game * game, SearchFlags * flags){
         memcpy(td[t].state_stack, state_stack, sizeof(state_stack));
         td[t].last_state = st_idx;
         td[t].state_stack[0].pst = NULL;
-        printf("IDX: %d\n", st_idx);
+        // printf("IDX: %d\n", st_idx);
         for (int i = 1; i < td[t].last_state; i++){
             td[t].state_stack[i].pst = &td[t].state_stack[i-1];
         }
@@ -1418,7 +1501,7 @@ Move iterative_search(Game * game, SearchFlags * flags){
     // if (game->history_count < 12){
     //     TTEntry * tt_entry = search_for_tt_entry(game, game->st->key);
     //     if (tt_entry){
-            // if (tt_entry->is_opening_book){
+    //      if (tt_entry->is_opening_book){
     //             Move m; 
     //             // unpack_move(tt_entry->move32, &m);
 
@@ -1605,38 +1688,41 @@ Move iterative_search(Game * game, SearchFlags * flags){
         // best_move_score = current_score;
 
         // debug info!
-        printf("Depth %d nodes %d qnodes %d reductions %.1f extensions %.1f tt hits %d tt probes %d asp fails %d fast %d lazy 1 %d 2 %d 3 %d lmr tried %d lmr research %d nmp %d ordering success %d futility prunes %d lmp %d cprunes %d rfp %d razor %d check ext %d delta %d qdelta %d see prunes %d q see prunes %d ch prunes %d pawn hash probes %d hits %d nps %f\n",
-        search_data->max_depth,
-        search_data->node_count,
-        search_data->qnodes,
-        search_data->reductions,
-        search_data->extensions,
-        search_data->tt_hits,
-        search_data->tt_probes,
-        search_data->aspiration_fail,
-        search_data->fast_evals,
-        search_data->lazy_cutoffs_s1,
-        search_data->lazy_cutoffs_s2,
-        search_data->lazy_cutoffs_s3,
-        search_data->lmrs_tried,
-        search_data->lmrs_researched,
-        search_data->null_prunes,
-        search_data->ordering_success,
-        search_data->futility_prunes,
-        search_data->late_move_prunes,
-        search_data->chist_prunes,
-        search_data->rfp,
-        search_data->razoring,
-        search_data->check_extensions,
-        search_data->delta_prunes,
-        search_data->qdelta_prunes,
-        search_data->see_prunes,
-        search_data->q_see_prunes,
-        search_data->check_prunes,
-        search_data->pawn_hash_probes,
-        search_data->pawn_hash_hits,
-        (search_data->node_count + search_data->qnodes) / elapsed_time);
+        if (debug_info){
+            
+            printf("Depth %d nodes %d qnodes %d reductions %.1f extensions %.1f tt hits %d tt probes %d asp fails %d fast %d lazy 1 %d 2 %d 3 %d lmr tried %d lmr research %d nmp %d ordering success %d futility prunes %d lmp %d cprunes %d rfp %d razor %d check ext %d delta %d qdelta %d see prunes %d q see prunes %d ch prunes %d pawn hash probes %d hits %d nps %f\n",
+            search_data->max_depth,
+            search_data->node_count,
+            search_data->qnodes,
+            search_data->reductions,
+            search_data->extensions,
+            search_data->tt_hits,
+            search_data->tt_probes,
+            search_data->aspiration_fail,
+            search_data->fast_evals,
+            search_data->lazy_cutoffs_s1,
+            search_data->lazy_cutoffs_s2,
+            search_data->lazy_cutoffs_s3,
+            search_data->lmrs_tried,
+            search_data->lmrs_researched,
+            search_data->null_prunes,
+            search_data->ordering_success,
+            search_data->futility_prunes,
+            search_data->late_move_prunes,
+            search_data->chist_prunes,
+            search_data->rfp,
+            search_data->razoring,
+            search_data->check_extensions,
+            search_data->delta_prunes,
+            search_data->qdelta_prunes,
+            search_data->see_prunes,
+            search_data->q_see_prunes,
+            search_data->check_prunes,
+            search_data->pawn_hash_probes,
+            search_data->pawn_hash_hits,
+            (search_data->node_count + search_data->qnodes) / elapsed_time);
 
+        }
 
         // uci printouts
         if (!game_end){
@@ -1644,7 +1730,7 @@ Move iterative_search(Game * game, SearchFlags * flags){
             best_move_score = atomic_load(&root.best_score);
             char dbg[100000];
             pthread_mutex_lock(&root.sd_lock);
-            printf("info depth %d score cp %d nodes %d pv ", i, best_move_score, root.sd.node_count);
+            printf("info depth %d time %d score cp %d nodes %d nps %d pv ", i, (int)elapsed_time, best_move_score, root.sd.node_count, (int)((float)root.sd.node_count / elapsed_time));
             // sprintf(dbg, "depth %d score cp %d nodes %d pv ", i, best_move_score, root.sd.node_count);
             pthread_mutex_unlock(&root.sd_lock);
             pthread_mutex_lock(&root.pv_lock);
@@ -1669,8 +1755,8 @@ Move iterative_search(Game * game, SearchFlags * flags){
 
     // if game hasn't ended, print out our move
     if (!game_end){
-        print_game_board(game);
-        fflush(stdout);
+        // print_game_board(game);
+        // fflush(stdout);
         printf("bestmove ");
         print_move_algebraic(game->side_to_move, current_best);
         printf("\n");

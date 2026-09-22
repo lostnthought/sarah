@@ -97,7 +97,21 @@ bool handle_uci_input(Game * game, SearchData * search_data){
                         }\
                     }\
 
+                #define EOCMP(name, line, s) \
+                    if (strcmp(line, #name) == 0){ \
+                        line = strtok_r(NULL, " ", &s);\
+                        if (!line) break;\
+                        if (strcmp(line, "value") == 0){\
+                            line = strtok_r(NULL, " ", &s);\
+                            if (line){ \
+                                double d = strtod(line, NULL);\
+                                (eo).name = d;\
+                            }\
+                        }\
+                    }\
 
+                EOCMP(debug_info, l, save);
+                EOCMP(threads, l, save);
                 CMP(eval_scale, l, save);
                 CMP(aspiration_base, l, save);
                 CMP(aspiration_mul, l, save);
@@ -167,6 +181,9 @@ bool handle_uci_input(Game * game, SearchData * search_data){
                 CMP(corr_kbn_weight, l, save);
                 CMP(corr_kqr_weight, l, save);
                 CMP(corr_ch_weight, l, save);
+                CMP(l1, l, save);
+                CMP(l2, l, save);
+                CMP(l3, l, save);
                 
                 break;
             }
@@ -274,6 +291,10 @@ bool handle_uci_input(Game * game, SearchData * search_data){
                        }
                    }
                 }
+                // memcpy(&game->os, game->st, sizeof(StateInfo));
+                // game->os.pst = NULL;
+                // game->st = &game->os;
+                // print_game_board(game);
             }
 
             break;
@@ -347,9 +368,42 @@ bool handle_uci_input(Game * game, SearchData * search_data){
                     default:
                         break;
                 }
+                if (time_left > 5000){
+                    flags.max_time = 75;
+                } else if (time_left > 3000){
+                    flags.max_time = 60;
+                } else if (time_left > 2000){
+                    flags.max_time = 220;
+                } else if (time_left > 1000){
+                    flags.max_time = 120;
+                } else if (time_left > 600){
+                    flags.max_time = 90;
+                } else if (time_left > 300){
+                    flags.max_time = 34;
+                } else if (time_left > 200){
+                    flags.max_time = 25;
+                } else if (time_left > 120){
+                    flags.max_time = 10;
+                } else if (time_left > 80){
+                    flags.max_time = 6;
+                } else if (time_left > 50){
+                    flags.max_time = 5;
+                } else if (time_left > 40){
+                    flags.max_time = 4;
+                } else if (time_left > 30){
+                    flags.max_time = 3;
+                } else if (time_left > 10){
+                    flags.max_time = 2;
+                } else if (time_left > 1){
+                    flags.max_time = 0.8;
+                } else {
+                    flags.max_time = 0.3;
+                }
                 double moves_left = 40;
                 double alloc = time_left / moves_left + inc;
-                alloc *= 0.8;
+                // flags.max_time =
+                //     MIN(flags.max_time + inc, MAX(time_left - 0.05, 0.0));
+                alloc *= 0.95;
                 flags.max_time = MAX(MIN(alloc, time_left * 0.2), 0.0005);
 
 

@@ -94,7 +94,7 @@ void init_params(){
         .max = 300,
         .start = 263.18,
         .ak = 0,
-        .ck = 20,
+        .ck = 40,
         .r = 0,
         .rk = 0.02,
         .t = INT16,
@@ -106,7 +106,7 @@ void init_params(){
         .max = 0,
         .start = -108.69,
        .ak = 0,
-        .ck = 20,
+        .ck = 40,
         .r = 0,
         .rk = 0.02,
         .t = INT16,
@@ -115,10 +115,10 @@ void init_params(){
     // {
     //     .name = "check_prune_margin",
     //     .min = 1,
-    //     .max = 100,
+    //     .max = 200,
     //     .start = 49,
     //     .ak = 0,
-    //     .ck = 10,
+    //     .ck = 30,
     //     .r = 0,
     //     .rk = 0.02,
     //     .t = INT16,
@@ -130,9 +130,9 @@ void init_params(){
         .max = 7,
         .start = 4.29,
         .ak = 0,
-        .ck = 0.5,
+        .ck = 1,
         .r = 0,
-        .rk = 0.02,
+        .rk = 0.05,
         .t = INT16,
     };
     params[param_count++] = (Param)
@@ -178,9 +178,9 @@ void init_params(){
         .max = 7,
         .start = 3,
         .ak = 0,
-        .ck = 0.5,
+        .ck = 1,
         .r = 0,
-        .rk = 0.02,
+        .rk = 0.05,
         .t = INT16,
     };
     params[param_count++] = (Param)
@@ -262,9 +262,9 @@ void init_params(){
         .max = 8,
         .start = 5,
         .ak = 0,
-        .ck = 0.5,
+        .ck = 1,
         .r = 0,
-        .rk = 0.02,
+        .rk = 0.05,
         .t = UINT8,
     };
     params[param_count++] = (Param)
@@ -310,9 +310,9 @@ void init_params(){
         .max = 6,
         .start = 3.96,
         .ak = 0,
-        .ck = 0.5,
+        .ck = 1,
         .r = 0,
-        .rk = 0.02,
+        .rk = 0.05,
         .t = UINT8,
     };
     params[param_count++] = (Param)
@@ -370,9 +370,9 @@ void init_params(){
         .max = 5,
         .start = 2.75,
         .ak = 0,
-        .ck = 0.5,
+        .ck = 1,
         .r = 0,
-        .rk = 0.02,
+        .rk = 0.05,
         .t = UINT8,
     };
     params[param_count++] = (Param)
@@ -454,9 +454,9 @@ void init_params(){
         .max = 8,
         .start = 4.98,
         .ak = 0,
-        .ck = 0.5,
+        .ck = 1,
         .r = 0,
-        .rk = 0.02,
+        .rk = 0.05,
         .t = UINT8,
     };
     params[param_count++] = (Param)
@@ -490,47 +490,47 @@ void init_params(){
         .max = 10,
         .start = 5,
         .ak = 0,
-        .ck = 0.5,
+        .ck = 1,
         .r = 0,
-        .rk = 0.02,
+        .rk = 0.05,
         .t = UINT8,
     };
-    params[param_count++] = (Param)
-    {
-        .name = "chist_depth",
-        .min = 1,
-        .max = 5,
-        .start = 1.37,
-        .ak = 0,
-        .ck = 0.5,
-        .r = 0,
-        .rk = 0.02,
-        .t = UINT8,
-    };
-    params[param_count++] = (Param)
-    {
-        .name = "chist1_margin",
-        .min = -24000,
-        .max = 0,
-        .start = -475,
-        .ak = 0,
-        .ck = 30,
-        .r = 0,
-        .rk = 0.02,
-        .t = INT16,
-    };
-    params[param_count++] = (Param)
-    {
-        .name = "chist2_margin",
-        .min = -24000,
-        .max = 0,
-        .start = -501,
-        .ak = 0,
-        .ck = 30,
-        .r = 0,
-        .rk = 0.02,
-        .t = INT16,
-    };
+    // params[param_count++] = (Param)
+    // {
+    //     .name = "chist_depth",
+    //     .min = 1,
+    //     .max = 5,
+    //     .start = 1.37,
+    //     .ak = 0,
+    //     .ck = 0.5,
+    //     .r = 0,
+    //     .rk = 0.02,
+    //     .t = UINT8,
+    // };
+    // params[param_count++] = (Param)
+    // {
+    //     .name = "chist1_margin",
+    //     .min = -24000,
+    //     .max = 0,
+    //     .start = -475,
+    //     .ak = 0,
+    //     .ck = 30,
+    //     .r = 0,
+    //     .rk = 0.02,
+    //     .t = INT16,
+    // };
+    // params[param_count++] = (Param)
+    // {
+    //     .name = "chist2_margin",
+    //     .min = -24000,
+    //     .max = 0,
+    //     .start = -501,
+    //     .ak = 0,
+    //     .ck = 30,
+    //     .r = 0,
+    //     .rk = 0.02,
+    //     .t = INT16,
+    // };
     params[param_count++] = (Param)
     {
         .name = "mp_goodcap_margin",
@@ -598,9 +598,9 @@ void init_params(){
         .max = 6,
         .start = 2.74,
         .ak = 0,
-        .ck = 0.5,
+        .ck = 1,
         .r = 0,
-        .rk = 0.02,
+        .rk = 0.05,
         .t = UINT8,
     };
     params[param_count++] = (Param)
@@ -610,7 +610,7 @@ void init_params(){
         .max = 0,
         .start = -51.76,
         .ak = 0,
-        .ck = 12,
+        .ck = 15,
         .r = 0,
         .rk = 0.03,
         .t = INT16,
@@ -622,7 +622,7 @@ void init_params(){
         .max = -35,
         .start = -79.82,
         .ak = 0,
-        .ck = 12,
+        .ck = 15,
         .r = 0,
         .rk = 0.03,
         .t = INT16,
@@ -634,9 +634,9 @@ void init_params(){
      .max = 10,
      .start = 7.51,
      .ak = 0,
-     .ck = 0.5,
+     .ck = 1,
      .r = 0,
-     .rk = 0.02,
+     .rk = 0.05,
      .t = UINT8,
  };
  params[param_count++] = (Param)
@@ -646,7 +646,7 @@ void init_params(){
      .max = 4,
      .start = 1.35,
      .ak = 0,
-     .ck = 0.3,
+     .ck = 1,
      .r = 0,
      .rk = 0.02,
      .t = DOUBLE,
@@ -670,7 +670,7 @@ void init_params(){
         .max = 250,
         .start = 94.98,
         .ak = 0,
-        .ck = 20,
+        .ck = 40,
         .r = 0,
         .rk = 0.02,
         .t = INT16,
@@ -682,7 +682,7 @@ void init_params(){
         .max = 250,
         .start = 173.45,
         .ak = 0,
-        .ck = 20,
+        .ck = 40,
         .r = 0,
         .rk = 0.02,
         .t = INT16,
@@ -694,7 +694,7 @@ void init_params(){
         .max = 250,
         .start = 100,
         .ak = 0,
-        .ck = 20,
+        .ck = 40,
         .r = 0,
         .rk = 0.02,
         .t = INT16,
@@ -706,7 +706,7 @@ void init_params(){
         .max = 250,
         .start = 129.59,
         .ak = 0,
-        .ck = 20,
+        .ck = 40,
         .r = 0,
         .rk = 0.02,
         .t = INT16,
@@ -718,7 +718,7 @@ void init_params(){
         .max = 250,
         .start = 166.18,
         .ak = 0,
-        .ck = 20,
+        .ck = 40,
         .r = 0,
         .rk = 0.02,
         .t = INT16,
@@ -730,7 +730,7 @@ void init_params(){
         .max = 250,
         .start = 138.34,
         .ak = 0,
-        .ck = 20,
+        .ck = 40,
         .r = 0,
         .rk = 0.02,
         .t = INT16,
@@ -742,7 +742,7 @@ void init_params(){
         .max = 250,
         .start = 82.67,
         .ak = 0,
-        .ck = 20,
+        .ck = 40,
         .r = 0,
         .rk = 0.02,
         .t = INT16,
@@ -754,7 +754,7 @@ void init_params(){
         .max = 150,
         .start = 28.05,
         .ak = 0,
-        .ck = 10,
+        .ck = 20,
         .r = 0,
         .rk = 0.02,
         .t = INT16,
@@ -819,18 +819,18 @@ void init_params(){
         .rk = 0.025,
         .t = INT16,
     };
-    // params[param_count++] = (Param)
-    // {
-    //     .name = "corr_mat_weight",
-    //     .min = 1,
-    //     .max = 1024,
-    //     .start = 107.94,
-    //     .ak = 0,
-    //     .ck = 50,
-    //     .r = 0,
-    //     .rk = 0.025,
-    //     .t = INT16,
-    // };
+    params[param_count++] = (Param)
+    {
+        .name = "corr_mat_weight",
+        .min = 1,
+        .max = 1024,
+        .start = 107.94,
+        .ak = 0,
+        .ck = 50,
+        .r = 0,
+        .rk = 0.025,
+        .t = INT16,
+    };
     params[param_count++] = (Param)
     {
         .name = "corr_np_weight",
@@ -879,6 +879,42 @@ void init_params(){
         .rk = 0.025,
         .t = INT16,
     };
+    params[param_count++] = (Param)
+    {
+        .name = "l1",
+        .min = 1000,
+        .max = 2000,
+        .start = 1500,
+        .ak = 0,
+        .ck = 55,
+        .r = 0,
+        .rk = 0.025,
+        .t = INT16,
+    };
+    params[param_count++] = (Param)
+    {
+        .name = "l2",
+        .min = 400,
+        .max = 1000,
+        .start = 700,
+        .ak = 0,
+        .ck = 40,
+        .r = 0,
+        .rk = 0.025,
+        .t = INT16,
+    };
+    params[param_count++] = (Param)
+    {
+        .name = "l3",
+        .min = 100,
+        .max = 400,
+        .start = 250,
+        .ak = 0,
+        .ck = 30,
+        .r = 0,
+        .rk = 0.025,
+        .t = INT16,
+    };
 }
 
 
@@ -904,7 +940,7 @@ void start_engine(FILE ** fin, FILE ** fout, FILE ** sin, FILE ** sout){
 
         close(first_in[1]);
         close(first_out[0]);
-        execl("./vixen14", "./vixen14", NULL);
+        execl("./sarah_1_1", "./sarah_1_1", NULL);
         perror("execl");
         exit(1);
     }
@@ -932,7 +968,7 @@ void start_engine(FILE ** fin, FILE ** fout, FILE ** sin, FILE ** sout){
         close(second_in[1]);
         close(second_out[0]);
 
-        execl("./vixen14", "./vixen14", NULL);
+        execl("./sarah_1_1", "./sarah_1_1", NULL);
         perror("execl");
         exit(1);
     }
@@ -1058,10 +1094,34 @@ int play_game(FILE * fin, FILE * fout, FILE * sin, FILE * sout, int s){
     for (int i = 0; i < param_count; i++){
 
         if (params[i].t == INT16 || params[i].t == UINT8){
-            fprintf(fin, "setoption name %s value %f\n", params[i].name, round(params[i].e1));
+
+            float r1 = ceil(params[i].e1);
+            float d1 = r1 - params[i].e1;
+            int rg1 = round(d1 * 10000.0f);
+            int rnd1 = rand() % 10000;
+            double rn1 = 0.0;
+            if (rnd1 > rg1){
+                rn1 = r1;
+            } else {
+                rn1 = r1 - 1;
+            }
+
+            float r2 = ceil(params[i].e2);
+            float d2 = r2 - params[i].e2;
+            int rg2 = round(d2 * 10000.0f);
+            int rnd2 = rand() % 10000;
+            double rn2 = 0.0;
+            if (rnd2 > rg2){
+                rn2 = r2;
+            } else {
+                rn2 = r2 - 1;
+            }
+
+            
+            fprintf(fin, "setoption name %s value %f\n", params[i].name, rn1);
             fflush(fin);
 
-            fprintf(sin, "setoption name %s value %f\n", params[i].name, round(params[i].e2));
+            fprintf(sin, "setoption name %s value %f\n", params[i].name, rn2);
             fflush(sin);
             
         } else {
@@ -1348,7 +1408,7 @@ int main(){
 
     double a[PARAM_MAX]; double c[PARAM_MAX]; double r[PARAM_MAX];
     init_fens("./chess.epd");
-    init_params_from_file("./tuner/jan24_1500_of_4000.txt");
+    init_params_from_file("./jan_special.txt");
 
     for (int i = 0; i < param_count; i++){
         c[i] = params[i].ck * pow(K, y);
@@ -1414,7 +1474,7 @@ int main(){
         printf("Time: %d | T+ Wins: %d | T- Wins: %d | Draws: %d | Time Losses: %d Illegal Positions: %d\n", (int)current_time, t_plus_wins, t_minus_wins, draws, time_loss, illegal_positions);
 
         if (s % 100 == 0){
-            write_checkpoint("jan24", s, K);
+            write_checkpoint("jan26", s, K);
         }
 
 

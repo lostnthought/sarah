@@ -1,6 +1,6 @@
 #include "game.h"
 #include "search.h"
-#include "tests.h"
+// #include "tests.h"
 #include "types.h"
 #include "math.h"
 #include "move_generation.h"
@@ -14,7 +14,8 @@ Game game;
 EngineOptions eo = {
     .debug_info = true,
     .max_depth = 30,
-    .time_per_move = 10
+    .time_per_move = 10,
+    .threads = 1
 };
 int running = 0;
 
@@ -25,7 +26,7 @@ int init(){
     init_pawn_hash(&game);
     init_eval_table(&game);
     init_search_tables();
-    init_eval_params("./tuner/Jan22-1.bin");
+    init_eval_params("./Sarah_1_0_data.bin");
     reset_countermove_and_refutation_tables(&game);
     reset_corrhist(&game);
     reset_piece_keys(&game);
@@ -37,7 +38,7 @@ int init(){
     //     printf("EGTB FAILED\n");
     // }
 
-    init_opening_book(&game, "./komodo.bin");
+    // init_opening_book(&game, "./komodo.bin");
     // print_flipped_psqts(WHITE);
 
 

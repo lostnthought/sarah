@@ -527,7 +527,7 @@ int parse_dataset(const char * path, Dataset * dataset){
     
     char line[1024];
     while (fgets(line, 1023, f)){
-        if (dataset->count > 5000000) return 1;
+        // if (dataset->count > 5000000) return 1;
         if (dataset->count + 1 >= dataset->capacity){
             dataset->capacity = (dataset->capacity + 2) * 2;
             dataset->entries = realloc(dataset->entries, sizeof(DatasetEntry) * dataset->capacity);
@@ -1684,9 +1684,9 @@ void new_tuner(Game * game, const char * path){
     double * W_mg = calloc(pi.total_params, sizeof(double));
     double * W_eg = calloc(pi.total_params, sizeof(double));
     // sgd(game, &dataset, &pi, W_mg, W_eg, 500, 0.1, 32, 1e-4, "Jan30-1");
-    adam(game, &dataset, &pi, W_mg, W_eg, 500, 0.001, 0.9, 0.999, 1e-7, 6432, 0.004, "Jan23-1");
+    adam(game, &dataset, &pi, W_mg, W_eg, 500, 0.001, 0.9, 0.999, 1e-8, 120000, 0.001, "Jan31-1");
 
-    FILE *out = fopen("./tuner/Jan22-1.bin", "wb");
+    FILE *out = fopen("./tuner/Jan31-1.bin", "wb");
     fwrite(W_mg, sizeof(double), pi.total_params, out);
     fwrite(W_eg, sizeof(double), pi.total_params, out);
     fclose(out);

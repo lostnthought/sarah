@@ -1,5 +1,7 @@
 #ifndef MATH_H
 #define MATH_H
+#include "types.h"
+// #include "math.c"
 
 static uint64_t DE_BRUIJN_MAGIC = 0x37E84A99DAE458FULL;
 
@@ -51,7 +53,7 @@ static inline int bit_scan_backward(uint64_t * b){
 
 
 static inline int pop_lsb(uint64_t * b){
-    if (!b) return 0;
+    // if (!b) return 0;
     uint64_t bb = *b;
     int index = __builtin_ctzll(bb);
     *b = bb & (bb - 1);

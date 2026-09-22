@@ -39,12 +39,16 @@ static inline bool see(Game *game, Move move, int16_t threshold) {
 
 
     // if our val is somehow less than 0 (very rare), then even if we aren't captured we're still below the threshold
-    if (val < 0) return false;
+    if (val < 0) {
+        return false;
+    }
 
     val -= PVAL[piece];
 
     // if our val is greater than zero even after assuming we get captured, then we can early out as positive
-    if (val >= 0) return true;
+    if (val >= 0) {
+        return true;
+    }
     
     uint64_t occ = game->board_pieces[BOTH]; 
     uint64_t temp_pieces[COLOR_MAX][PIECE_TYPES];
@@ -133,7 +137,7 @@ static inline Score evaluate_pawn_structure(Game * game, Side side, EvalMasks * 
     for (int i = 0; i < 8; i++){
         // doubled pawns
         uint8_t count = __builtin_popcountll(pawns & file_masks[i]);
-        if (count > 1) s += (count - 1) * P_DOUBLED;
+        if (count > 1) s += eval_params[ep_idx.doubled_pawn] * (count - 1);
     }
 
     // cache pawn attacks
@@ -425,10 +429,6 @@ static inline Score evaluate_king_threat(Game * game, Side side, EvalMasks * mas
 
 // this idea was taken straight from kohai but isn't in use anymore. it found if a king was able to stop a pawn in endgame, but in texel tuning I found this was often getting poor signal and sometimes even getting heavily negated. the code definitely worked but I think there are too many edge cases for it to work properly.
 
-static inline bool material_is_lone_king(Game * game, Side side){
-    if (game->pieces[side][KNIGHT] == 0 && game->pieces[side][BISHOP] == 0 && game->pieces[side][ROOK] == 0 && game->pieces[side][QUEEN] == 0) return true;
-    return false;
-}
 static inline bool passer_is_unstoppable(Game * game, Side side, int pos, EvalMasks * masks){
     if (!material_is_lone_king(game, (Side)!side)) return false;
 
@@ -706,7 +706,7 @@ static inline int corrhist_eval(Game * game, ThreadData * td, SearchStack * stac
         
     }
     
-    int c = (cp + cnp_w + cnp_b + ckqr + ckbn + cr) / sp.corrhist_grain;
+    int c = (cp + cnp_w + cnp_b + ckqr + ckbn + cr + cm) / sp.corrhist_grain;
     return c;
 }
 
@@ -763,6 +763,14 @@ static inline int evaluate(Game * game, ThreadData * td, SearchStack * stack, Si
     
     int corrhist = corrhist_eval(game, td, stack, side);
     
+    int l1e = ((EG(s) * (MAX_PHASE - phase)) + (MG(s) * phase)) / MAX_PHASE;
+    // const int l1 = 1500;
+    l1e = side ? corrhist + l1e : corrhist - l1e; 
+    if (l1e >= beta + sp.l1 || l1e <= alpha - sp.l1) {
+        search_data->lazy_cutoffs_s1 += 1;
+        *lazy = true;
+        return l1e;
+    }
     // this logic is sort of expensive but necessary, we need to set up masks for eval before evaluating material because we need to know where each side attacks. it is actually possible to split this up a bit more and have another lazy stage (had it before), but would require refactor, retuning, and probably sacrificing some positional accuracy in evaluate_material
 
     // per piece attack masks indexed by piece list index (piece count when piece was set)
@@ -778,38 +786,52 @@ static inline int evaluate(Game * game, ThreadData * td, SearchStack * stack, Si
     generate_attack_mask_and_eval_mobility(game, BLACK, &masks, piece_attacks);
 
 
-    
+    // evaluates the threat we have on the enemy king
+    Score kw = evaluate_king_threat(game, WHITE, &masks, piece_attacks);
+    Score kb = evaluate_king_threat(game, BLACK, &masks, piece_attacks);
 
+    s += kw - kb;
+    int l2e = ((EG(s) * (MAX_PHASE - phase)) + (MG(s) * phase)) / MAX_PHASE;
+    const int l2 = 700;
+    l2e = side ? corrhist + l2e : corrhist - l2e; 
+    if (l2e >= beta + sp.l2 || l2e <= alpha - sp.l2) {
+        search_data->lazy_cutoffs_s2 += 1;
+        *lazy = true;
+        return l2e;
+    }
     // misc per piece eval
     Score mw = evaluate_material(game, WHITE, &masks, piece_attacks);
     Score mb = evaluate_material(game, BLACK, &masks, piece_attacks);
+
+    s += mw - mb;
+    int l3e = ((EG(s) * (MAX_PHASE - phase)) + (MG(s) * phase)) / MAX_PHASE;
+    const int l3 = 250;
+    l3e = side ? corrhist + l3e : corrhist - l3e; 
+    if (l3e >= beta + sp.l3 || l3e <= alpha - sp.l3) {
+        search_data->lazy_cutoffs_s3 += 1;
+        *lazy = true;
+        return l3e;
+    }
 
     // threats we have on enemy pieces
     Score tw = evaluate_threats(game, WHITE, &masks);
     Score tb = evaluate_threats(game, BLACK, &masks);
 
+    s += tw - tb;
+    
     // evaluates individual passers
     Score pw = evaluate_passers(game, WHITE, &masks);
     Score pb = evaluate_passers(game, BLACK, &masks);
     
-    // evaluates the threat we have on the enemy king
-    Score kw = evaluate_king_threat(game, WHITE, &masks, piece_attacks);
-    Score kb = evaluate_king_threat(game, BLACK, &masks, piece_attacks);
-
-    s += mw - mb;
-    s += tw - tb;
     s += pw - pb;
-    s += kw - kb;
+
 
 
     int mg = 0, eg = 0;
     mg = MG(s);
     eg = EG(s);
     int e = ((eg * (MAX_PHASE - phase)) + (mg * phase)) / MAX_PHASE;
-
-
     
-    const int MAX_DEPTH = 32;
     if (side == WHITE){
         
         int ee = corrhist + e;
