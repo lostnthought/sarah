@@ -41,9 +41,8 @@ int polyglot_castle_offsets[COLOR_MAX][CASTLESIDE_MAX] =
     }
     
 };
-
-uint64_t pawn_random[COLOR_MAX][64];
-uint64_t king_location_random[COLOR_MAX][3];
+uint64_t piece_random[COLOR_MAX][64];
+uint64_t king_location_random[COLOR_MAX][64];
 
 const uint64_t Random64[781] = {
    U64(0x9D39247E33776D41), U64(0x2AF7398005AAA5C7), U64(0x44DB015024623547), U64(0x9C15F73E62A76AE2),
@@ -248,43 +247,54 @@ const uint64_t Random64[781] = {
 
 
 void init_tt(Game * game){
-    game->tt = calloc(TT_SIZE, sizeof(TTEntry));
+    // game->tt = calloc(TT_SIZE, sizeof(TTEntry));
+    memset(tt, 0, sizeof(TTBucket) * TT_SIZE);
 }
 void init_pawn_hash(Game * game){
-    game->pawn_hash_table = calloc(PAWN_SIZE, sizeof(PawnHashEntry));
+    // game->pawn_hash_table = calloc(PAWN_SIZE, sizeof(PawnHashEntry));
+    memset(pawn_hash_table, 0, sizeof(PawnHashEntry) * PAWN_SIZE);
 }
 
 void reset_pawn_hash(Game * game){
-    if (game->pawn_hash_table){
-        free(game->pawn_hash_table);
-    }
-    game->pawn_hash_table = NULL;
+    // if (game->pawn_hash_table){
+    //     free(game->pawn_hash_table);
+    // }
+    // game->pawn_hash_table = NULL;
     init_pawn_hash(game);
 }
 
 void reset_tt(Game * game){
-    if (game->tt){
-        free(game->tt);
-    }
-    game->tt = NULL;
+    // if (game->tt){
+    //     free(game->tt);
+    // }
+    // game->tt = NULL;
     init_tt(game);
 }
 
 void init_eval_table(Game * game){
-    game->eval_table = calloc(EVAL_SIZE, sizeof(EvalEntry));
+    // game->eval_table = calloc(EVAL_SIZE, sizeof(EvalEntry));
+    memset(eval_table, 0, sizeof(EvalEntry) * EVAL_SIZE);
 }
 void reset_eval_table(Game * game){
-    if (game->eval_table){
-        free(game->eval_table);
-    }
-    game->eval_table = NULL;
+    // if (game->eval_table){
+    //     free(game->eval_table);
+    // }
+    // game->eval_table = NULL;
     init_eval_table(game);
 }
 void reset_countermove_and_refutation_tables(Game * game){
-    memset(game->countermove_table, 0, COUNTERMOVE_TABLE_SIZE * sizeof(uint32_t));
-    memset(game->refutation_table, 0, REFUTATION_TABLE_SIZE * sizeof(uint32_t));
+    // memset(game->countermove_table, 0, COUNTERMOVE_TABLE_SIZE * sizeof(uint32_t));
+    // memset(game->refutation_table, 0, REFUTATION_TABLE_SIZE * sizeof(uint32_t));
+}
+void reset_corrhist(Game * game){
+    // memset(td->corrhist_p, 0, COLOR_MAX * CORRHIST_SIZE * sizeof(int));
+    // memset(td->corrhist_nonpawns_w, 0, COLOR_MAX * CORRHIST_SIZE * sizeof(int));
+    // memset(td->corrhist_nonpawns_b, 0, COLOR_MAX * CORRHIST_SIZE * sizeof(int));
+    // memset(td->corrhist_kbn, 0, COLOR_MAX * CORRHIST_SIZE * sizeof(int));
+    // memset(td->corrhist_kqr, 0, COLOR_MAX * CORRHIST_SIZE * sizeof(int));
 }
 
+// this function uses st and not os, st has to be set to &os on init
 
 uint64_t create_zobrist_from_scratch(Game * game){
 
@@ -332,33 +342,43 @@ uint64_t create_zobrist_from_scratch(Game * game){
 
 
     uint64_t castle = 0;
-    if (game->castle_flags[WHITE][KINGSIDE]){
+
+    uint8_t fl = game->st->castle_flags;
+    while (fl){
+        
+        uint8_t f= __builtin_ctz(fl);
+        fl = fl & (fl - 1);
+
+        castle ^= Random64[CASTLING_OFFSET + f];
+    }
+    // if (game->st->castle_flags[WHITE][KINGSIDE]){
             
-        castle ^= Random64[CASTLING_OFFSET + 0];
-    }
-    if (game->castle_flags[WHITE][QUEENSIDE]){
+    //     castle ^= Random64[CASTLING_OFFSET + 0];
+    // }
+    // if (game->st->castle_flags[WHITE][QUEENSIDE]){
         
             
-        castle ^= Random64[CASTLING_OFFSET + 1];
-    }
-    if (game->castle_flags[BLACK][KINGSIDE]){
+    //     castle ^= Random64[CASTLING_OFFSET + 1];
+    // }
+    // if (game->st->castle_flags[BLACK][KINGSIDE]){
         
-        castle ^= Random64[CASTLING_OFFSET + 2];
-    }
-    if (game->castle_flags[BLACK][QUEENSIDE]){
+    //     castle ^= Random64[CASTLING_OFFSET + 2];
+    // }
+    // if (game->st->castle_flags[BLACK][QUEENSIDE]){
         
-        castle ^= Random64[CASTLING_OFFSET + 3];
-    }
+        
+    //     castle ^= Random64[CASTLING_OFFSET + 3];
+    // }
 
 
     // en passant check!
 
     uint64_t en_passant = 0;
-    if (game->en_passant_index != -1){
-        if (game->pieces[game->side_to_move][PAWN] & pawn_captures[!game->side_to_move][game->en_passant_index]){
+    if (game->st->en_passant_index != -1){
+        if (game->pieces[game->side_to_move][PAWN] & pawn_captures[!game->side_to_move][game->st->en_passant_index]){
             File file;
             Rank rank;
-            index_to_file_and_rank(game->en_passant_index, &file, &rank);
+            index_to_file_and_rank(game->st->en_passant_index, &file, &rank);
             en_passant = Random64[EN_PASSANT_OFFSET + file];
 
         }
@@ -375,19 +395,75 @@ uint64_t create_zobrist_from_scratch(Game * game){
         
 }
 
+uint64_t create_nonpawn_hash_from_scratch(Game * game, Side side){
+
+
+    uint64_t key = 0;
+    uint64_t knights = game->pieces[side][KNIGHT];
+    while (knights){
+        int pos = __builtin_ctzll(knights);
+        knights = knights & (knights - 1);
+        key ^= piece_random[side][pos];
+    }
+    uint64_t bishops = game->pieces[side][BISHOP];
+    while (bishops){
+        int pos = __builtin_ctzll(bishops);
+        bishops = bishops & (bishops - 1);
+        key ^= piece_random[side][pos];
+    }
+    uint64_t rooks = game->pieces[side][ROOK];
+    while (rooks){
+        int pos = __builtin_ctzll(rooks);
+        rooks = rooks & (rooks - 1);
+        key ^= piece_random[side][pos];
+    }
+    uint64_t queens = game->pieces[side][QUEEN];
+    while (queens){
+        int pos = __builtin_ctzll(queens);
+        queens = queens & (queens - 1);
+        key ^= piece_random[side][pos];
+    }
+    uint64_t kings = game->pieces[side][KING];
+    while (kings){
+        int pos = __builtin_ctzll(kings);
+        kings = kings & (kings - 1);
+        key ^= piece_random[side][pos];
+    }
+    return key;
+}
+
+uint64_t create_piece_hash_from_scratch(Game * game, PieceType p){
+
+    uint64_t key = 0;
+    uint64_t w_pawns = game->pieces[WHITE][p];
+    while (w_pawns){
+        int pos = pop_lsb(&w_pawns);
+        key ^= piece_random[WHITE][pos];
+    }
+    uint64_t b_pawns = game->pieces[BLACK][p];
+    while (b_pawns){
+        int pos = pop_lsb(&b_pawns);
+        key ^= piece_random[BLACK][pos];
+    }
+    return key;
+}
 uint64_t create_pawn_hash_from_scratch(Game * game){
     uint64_t key = 0;
     uint64_t w_pawns = game->pieces[WHITE][PAWN];
     while (w_pawns){
         int pos = pop_lsb(&w_pawns);
-        key ^= pawn_random[WHITE][pos];
+        key ^= piece_random[WHITE][pos];
     }
     uint64_t b_pawns = game->pieces[BLACK][PAWN];
     while (b_pawns){
         int pos = pop_lsb(&b_pawns);
-        key ^= pawn_random[BLACK][pos];
+        key ^= piece_random[BLACK][pos];
     }
 
+    // int wkpos = bit_scan_forward(&game->pieces[WHITE][KING]);
+    // key ^= king_location_random[WHITE][wkpos];
+    // int bkpos = bit_scan_forward(&game->pieces[BLACK][KING]);
+    // key ^= king_location_random[BLACK][bkpos];
     // int w_king_pos = bit_scan_forward(&game->pieces[WHITE][KING]);
     // if (w_king_pos & castle_masks[WHITE][KINGSIDE]){
     //     key ^= king_location_random[WHITE][KINGSIDE];
@@ -408,10 +484,27 @@ uint64_t create_pawn_hash_from_scratch(Game * game){
 
 }
 
+uint64_t create_material_hash_from_scratch(Game * game){
+    uint64_t key = 0;
+    key ^= material_randoms[WHITE][PAWN][game->piece_count[WHITE][PAWN]];
+    key ^= material_randoms[WHITE][KNIGHT][game->piece_count[WHITE][KNIGHT]];
+    key ^= material_randoms[WHITE][BISHOP][game->piece_count[WHITE][BISHOP]];
+    key ^= material_randoms[WHITE][ROOK][game->piece_count[WHITE][ROOK]];
+    key ^= material_randoms[WHITE][QUEEN][game->piece_count[WHITE][QUEEN]];
+    key ^= material_randoms[WHITE][KING][game->piece_count[WHITE][KING]];
+    key ^= material_randoms[BLACK][PAWN][game->piece_count[BLACK][PAWN]];
+    key ^= material_randoms[BLACK][KNIGHT][game->piece_count[BLACK][KNIGHT]];
+    key ^= material_randoms[BLACK][BISHOP][game->piece_count[BLACK][BISHOP]];
+    key ^= material_randoms[BLACK][ROOK][game->piece_count[BLACK][ROOK]];
+    key ^= material_randoms[BLACK][QUEEN][game->piece_count[BLACK][QUEEN]];
+    key ^= material_randoms[BLACK][KING][game->piece_count[BLACK][KING]];
+    return key;
+}
+
 void init_opening_book(Game * game, const char * path){
 
     FILE * b = fopen(path, "rb");
-    if (!b || !game->tt) {
+    if (!b) {
         printf("OPENING BOOK NOT FOUND\n");
         return;
     }
@@ -425,18 +518,18 @@ void init_opening_book(Game * game, const char * path){
     // you MUST endian swap polyglot books as well
     for (int i = 0; i < entries; i++){
         uint64_t key = 0;
-        fread(&key, sizeof(uint64_t), 1, b);
+        size_t a =fread(&key, sizeof(uint64_t), 1, b);
         key = __builtin_bswap64(key);
         uint16_t m = 0;
-        fread(&m, sizeof(uint16_t), 1, b);
+        size_t c = fread(&m, sizeof(uint16_t), 1, b);
         m = __builtin_bswap16(m);
         Move move = polyglot_decode(m);
         uint16_t weight = 0;
-        fread(&weight, sizeof(uint16_t), 1, b);
+        size_t d = fread(&weight, sizeof(uint16_t), 1, b);
 
         weight = __builtin_bswap16(weight);
         uint32_t learn = 0;
-        fread(&learn, sizeof(uint32_t), 1, b);
+        size_t e = fread(&learn, sizeof(uint32_t), 1, b);
         if (key == 0) continue;
         if (m == 0)  continue;
         if (weight == 0) continue;
