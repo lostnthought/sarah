@@ -1,6 +1,6 @@
 #ifndef MATH_H
 #define MATH_H
-#include "math.c"
+// #include "math.c"
 
 static uint64_t DE_BRUIJN_MAGIC = 0x37E84A99DAE458FULL;
 
