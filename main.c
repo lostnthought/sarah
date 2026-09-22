@@ -7,8 +7,8 @@
 #include "utils.h"
 #include "tuner.h"
 #include "zobrist.h"
-#include "./tables/tbconfig.h"
-#include "./tables/tbprobe.h"
+// #include "./tables/tbconfig.h"
+// #include "./tables/tbprobe.h"
 
 Game game;
 EngineOptions eo = {
@@ -31,11 +31,11 @@ int init(){
     reset_piece_keys(&game);
 
 
-    if (tb_init("./tablebase.lichess.ovh/tables/standard/3-4-5-wdl:" "./tablebase.lichess.ovh/tables/standard/3-4-5-dtz")){
-        printf("TABLEBASES SUCCESSFULLY SETUP\n");
-    } else {
-        printf("EGTB FAILED\n");
-    }
+    // if (tb_init("./tablebase.lichess.ovh/tables/standard/3-4-5-wdl:" "./tablebase.lichess.ovh/tables/standard/3-4-5-dtz")){
+    //     printf("TABLEBASES SUCCESSFULLY SETUP\n");
+    // } else {
+    //     printf("EGTB FAILED\n");
+    // }
 
     init_opening_book(&game, "./komodo.bin");
     // print_flipped_psqts(WHITE);
