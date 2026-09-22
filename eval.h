@@ -7,7 +7,7 @@
 #include "magic.h"
 #include "game.h"
 #include "move_generation.h"
-#include "eval_constants.h"
+// #include "eval_constants.h"
 
 /* 
     @brief used to initialize evaluation and phase values when we set the board to a new fen. used to be way more useful, since our material is no longer incremental due to computation demands.
